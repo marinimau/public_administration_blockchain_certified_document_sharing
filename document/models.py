@@ -205,3 +205,50 @@ class Permission(models.Model):
         return Permission.objects.filter(citizen=citizen, document=document).exists()
 
 
+class Favorite(models.Model):
+    """
+        Favorite
+        It represent the favorite document of a User
+    """
+
+    id = models.AutoField(primary_key=True)
+    citizen = models.ForeignKey(Citizen, null=False, on_delete=models.RESTRICT)
+    document = models.ForeignKey(Document, null=False, on_delete=models.RESTRICT)
+
+    class Meta:
+        unique_together = (('citizen', 'document'),)
+
+    def add_to_favorite(self, citizen, document):
+        """
+        Add to Favorite a document
+        :param citizen: the citizen who want to add the document to favorites
+        :param document: the document to add
+        :return:
+        """
+        self.citizen = citizen
+        self.document = document
+        self.save()
+        return
+
+    @staticmethod
+    def remove_from_favorites(citizen, document):
+        """
+        Remove document from favorites
+        :param citizen: the citizen who want to remove document from favorites
+        :param document: the document
+        :return:
+        """
+        queryset = Favorite.objects.filter(citizen=citizen, document=document)
+        if queryset.exists():
+            queryset.delete()
+        return
+
+    @staticmethod
+    def is_favorite(citizen, document):
+        """
+        Check if document is in citizen favorites
+        :param citizen: the citizen who want to check favorites
+        :param document: the document
+        :return:
+        """
+        return Favorite.objects.filter(citizen=citizen, document=document).exists()
