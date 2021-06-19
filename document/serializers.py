@@ -89,8 +89,8 @@ class PermissionSerializer(serializers.Serializer):
         :param validated_data: the validated data
         :return: The created instance and 201 response or raise a serialization error
         """
-        citizen = document_validators.validate_citizen(self.context)
-        document = document_validators.validate_document(validated_data.pop('document'))
+        citizen = document_validators.validate_citizen(str.lower(validated_data.pop('cf', 'undefined')))
+        document = document_validators.validate_document(validated_data.pop('document_id'))
         if not Permission.check_permissions(citizen=citizen, document=document):
             return Permission.add_permissions(document=document, citizen=citizen)
         else:
@@ -98,5 +98,7 @@ class PermissionSerializer(serializers.Serializer):
             raise serializers.ValidationError(error)
 
     id = serializers.ReadOnlyField()
+    cf = serializers.CharField(max_length=16, min_length=16, write_only=True, required=True)
+    document_id = serializers.IntegerField(required=True, write_only=True)
     citizen = serializers.ReadOnlyField(source='citizen.cf')
     document = serializers.ReadOnlyField(source='document.id')

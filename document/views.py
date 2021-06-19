@@ -12,9 +12,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND
 
-from .models import Document
+from user.models import Citizen
+from .models import Document, Permission
 from .permissions import IsPaOperator, DocumentItemPermissions
-from .serializers import DocumentSerializer
+from .serializers import DocumentSerializer, PermissionSerializer
 from contents.messages.get_messages import get_document_messages
 
 document_messages = get_document_messages()
@@ -33,7 +34,7 @@ document_messages = get_document_messages()
 
 class DocumentsList(generics.ListCreateAPIView):
     """
-    Serializer for the list of all the Documents
+    Endpoint for the list of all the Documents
     """
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
@@ -42,11 +43,90 @@ class DocumentsList(generics.ListCreateAPIView):
 
 class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
     """
-    Serializer for the single document page
+    Endpoint for the single document page
     """
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
     permission_classes = [DocumentItemPermissions]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#   Permission views
+#   -   Permissions list of a document
+#       - if GET:   list all user that can view a document
+#
+#   -   Permissions list of an user
+#       - if GET:   list all user that can view a document
+#
+#   -   Permission creation
+#       - if POST:  create permission
+#
+#   -   Permission detail:
+#       - if GET: show permission detail
+#       - if DELETE: delete permission
+# ----------------------------------------------------------------------------------------------------------------------
+
+class PermissionListDocument(generics.ListAPIView):
+    """
+    Endpoint for the list of permissions for a Document
+    """
+    queryset = Document.objects.all()
+    serializer_class = PermissionSerializer
+    permission_classes = [IsPaOperator]
+    lookup_fields = 'citizen'
+
+    def get_queryset(self):
+        """
+        Get the permissions associated to the given document
+        :return:
+        """
+        document_id = self.kwargs['document_id']
+        exists_document = Document.objects.filter(id=document_id).exists()
+        if exists_document:
+            document = Document.objects.get(id=document_id)
+            return Permission.objects.filter(document=document)
+        return []
+
+
+class PermissionListUser(generics.ListAPIView):
+    """
+    Endpoint for the list of permissions for a Citizen
+    """
+    queryset = Document.objects.all()
+    serializer_class = PermissionSerializer
+    permission_classes = [IsPaOperator]
+    lookup_fields = 'citizen'
+
+    def get_queryset(self):
+        """
+        Get the permissions associated to the given citizen
+        :return:
+        """
+        cf = self.kwargs['cf']
+        cf = str.lower(cf)
+        exists_citizen = Citizen.objects.filter(cf=cf).exists()
+        if exists_citizen:
+            citizen = Citizen.objects.get(cf=cf)
+            return Permission.objects.filter(citizen=citizen)
+        return []
+
+
+class PermissionCreation(generics.CreateAPIView):
+    """
+    Endpoint for the permission creation
+    """
+    queryset = Permission.objects.all()
+    serializer_class = PermissionSerializer
+    permission_classes = [IsPaOperator]
+
+
+class PermissionDetail(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Serializer for the single document page
+    """
+    queryset = Permission.objects.all()
+    serializer_class = PermissionSerializer
+    permission_classes = [IsPaOperator]
 
 
 # ----------------------------------------------------------------------------------------------------------------------

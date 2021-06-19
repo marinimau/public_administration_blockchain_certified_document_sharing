@@ -29,15 +29,14 @@ def validate_author(context):
     raise serializers.ValidationError(error)
 
 
-def validate_citizen(context):
+def validate_citizen(cf):
     """
     Return a citizen object associated to the request username or raise a serialization error
-    :param context: the request context
+    :param cf: the citizen cf code
     :return: a citizen object associated to the request username or raise a serialization error
     """
-    request = context.get("request")
-    if request and hasattr(request, "user") and Citizen.objects.filter(username=request.user.username).exists():
-        return Citizen.objects.get(username=request.user.username)
+    if Citizen.check_if_exists(cf=cf):
+        return Citizen.objects.get(cf=cf)
     error = {'message': document_messages['invalid_citizen_error']}
     raise serializers.ValidationError(error)
 

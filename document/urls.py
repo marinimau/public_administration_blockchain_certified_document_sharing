@@ -10,16 +10,27 @@
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 
-from .views import DocumentsList, DocumentDetail
+from .views import DocumentsList, DocumentDetail, PermissionListDocument, PermissionListUser, PermissionCreation, \
+    PermissionDetail
 
 urlpatterns = [
     # ------------------------------------------------------------------------------------------------------------------
     #   Document Views
     # ------------------------------------------------------------------------------------------------------------------
-    path('api/v1/documents/', DocumentsList.as_view()),
-    path('api/v1/documents/<int:pk>', DocumentDetail.as_view()),
+    path('api/v1/document/', DocumentsList.as_view()),
+    path('api/v1/document/<int:pk>', DocumentDetail.as_view()),
+    # ------------------------------------------------------------------------------------------------------------------
+    #   Document Versions Views
+    # ------------------------------------------------------------------------------------------------------------------
     # path('api/v1/documents/<document_id>/versions/', DocumentVersionList.as_view())
     # path('api/v1/documents/<document_id>/versions/<int:pk>', DocumentVersionList.as_view())
+    # ------------------------------------------------------------------------------------------------------------------
+    #   Document Permissions VIews
+    # ------------------------------------------------------------------------------------------------------------------
+    path('api/v1/document/<document_id>/view_permissions/', PermissionListDocument.as_view()),
+    path('api/v1/citizen/<cf>/view_permissions/', PermissionListUser.as_view()),
+    path('api/v1/create_permission/', PermissionCreation.as_view()),
+    path('api/v1/permission_detail/<int:pk>', PermissionDetail.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
