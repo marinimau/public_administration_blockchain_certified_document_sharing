@@ -13,13 +13,22 @@ from user.models import PaOperator, Citizen
 from .models import Permission
 
 
-class DocumentListPermissions(permissions.BasePermission):
+class IsPaOperator(permissions.BasePermission):
     """
-    Custom permission to document list
+    Custom permission: return true if is a PA operator
     """
 
     def has_permission(self, request, view):
         return request.user is not None and PaOperator.objects.filter(username=request.user.username).exists()
+
+
+class IsCitizen(permissions.BasePermission):
+    """
+    Custom permission: return true if is a Citizen
+    """
+
+    def has_permission(self, request, view):
+        return request.user is not None and Citizen.objects.filter(username=request.user.username).exists()
 
 
 class DocumentItemPermissions(permissions.BasePermission):
@@ -28,8 +37,14 @@ class DocumentItemPermissions(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
+        is_operator = request.user is not None and PaOperator.objects.filter(username=request.user.username).exists()
+        is_citizen = request.user is not None and Citizen.objects.filter(username=request.user.username).exists()
         if request.method == 'GET':
-            isOperator = request.user is not None and PaOperator.objects.filter(username=request.user.username).exists()
-            citizen = Citizen.objects.get(username=request.user.username)
-            return not obj.require_permission or isOperator or Permission.check_permissions(citizen, obj)
+            is_authorized_citizen = False
+            if is_citizen:
+                citizen = Citizen.objects.get(username=request.user.username)
+                is_authorized_citizen = Permission.check_permissions(citizen, obj)
+            return not obj.require_permission or is_operator or is_authorized_citizen
+        if request.method == 'UPDATE' or request.method == 'PUT':
+            return is_operator
         return False

@@ -10,16 +10,67 @@
 from rest_framework import serializers
 
 from .validators import document_validators
-from contents.messages.get_messages import get_generic_messages
-from .models import Document
+from contents.messages.get_messages import get_generic_messages, get_document_messages
+from .models import Document, Permission
 
 generic_messages = get_generic_messages()
+document_messages = get_document_messages()
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Document Serializer
+#
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 class DocumentSerializer(serializers.Serializer):
     """
     Document serializer
     this is the serializer of the Document model
+    """
+
+    def update(self, instance, validated_data):
+        """
+        Update serializer
+        :param instance: the document instance to update
+        :param validated_data: the validate data
+        :return: the updated instance
+        """
+        instance.title = validated_data.pop('title', instance.title)
+        instance.description = validated_data.pop('description', instance.description)
+        instance.require_permission = validated_data.pop('require_permission', instance.require_permission)
+        instance.save()
+        return instance
+
+    def create(self, validated_data):
+        """
+        Creation serializer
+        :param validated_data: the validated data
+        :return: The created instance and 201 response or raise a serialization error
+        """
+        author = document_validators.validate_author(self.context)
+        title = validated_data.pop('title')
+        description = validated_data.pop('description')
+        require_permission = validated_data.pop('require_permission')
+        return Document.create_document(title, author, description, require_permission)
+
+    id = serializers.ReadOnlyField()
+    author = serializers.ReadOnlyField(source='author.username')
+    title = serializers.CharField(min_length=10, max_length=60, required=True)
+    description = serializers.CharField(max_length=500, required=False, default="No description")
+    require_permission = serializers.BooleanField(required=False, default=True)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Permissions Serializer
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
+class PermissionSerializer(serializers.Serializer):
+    """
+    Permission serializer
+    this is the serializer of the Permission model
     """
 
     def update(self, instance, validated_data):
@@ -38,14 +89,14 @@ class DocumentSerializer(serializers.Serializer):
         :param validated_data: the validated data
         :return: The created instance and 201 response or raise a serialization error
         """
-        author = document_validators.validate_author(self.context)
-        title = validated_data.pop('title')
-        description = validated_data.pop('description')
-        require_permissions = validated_data.pop('require_permissions')
-        return Document.create_document(title, author, description, require_permissions)
+        citizen = document_validators.validate_citizen(self.context)
+        document = document_validators.validate_document(validated_data.pop('document'))
+        if not Permission.check_permissions(citizen=citizen, document=document):
+            return Permission.add_permissions(document=document, citizen=citizen)
+        else:
+            error = {'message': document_messages['permission_already_exists_error']}
+            raise serializers.ValidationError(error)
 
     id = serializers.ReadOnlyField()
-    author = serializers.ReadOnlyField(source='author.username')
-    title = serializers.CharField(min_length=10, max_length=60, required=True)
-    description = serializers.CharField(max_length=500, required=False, default="No description")
-    require_permissions = serializers.BooleanField(required=False, default=True)
+    citizen = serializers.ReadOnlyField(source='citizen.cf')
+    document = serializers.ReadOnlyField(source='document.id')

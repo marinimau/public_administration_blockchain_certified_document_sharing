@@ -56,6 +56,15 @@ class Document(models.Model):
         """
         return Document.objects.all()
 
+    @staticmethod
+    def check_if_exists(document_id):
+        """
+        Given the ID returns true if the document exists, false otherwise
+        :param document_id: the id of the document
+        :return: true if the document exists, false otherwise
+        """
+        return id is not None and Document.objects.filter(id=document_id).exists()
+
 
 class DocumentVersion(models.Model):
     """
@@ -167,17 +176,15 @@ class Permission(models.Model):
     class Meta:
         unique_together = (('citizen', 'document'),)
 
-    def add_permissions(self, citizen, document):
+    @staticmethod
+    def add_permissions(citizen, document):
         """
         Add view permissions given a citizen and a document
         :param citizen: the citizen who want to grant permissions
         :param document: the document object of permissions
         :return:
         """
-        self.citizen = citizen
-        self.document = document
-        self.save()
-        return
+        return Permission.objects.create(citizen=citizen, document=document)
 
     @staticmethod
     def remove_permissions(citizen, document):
