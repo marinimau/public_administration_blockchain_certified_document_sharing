@@ -131,3 +131,26 @@ class DocumentVersion(models.Model):
             return queryset.last()
         return None
 
+    def get_previous_version(self):
+        """
+        Returns the previous version of a given document version
+        :return: the previous version of a given document version
+        """
+        queryset = DocumentVersion.objects.filter(document=self.document,
+                                                  creation_timestamp__lt=self.creation_timestamp).order_by(
+            "creation_timestamp")
+        if queryset.exists():
+            return queryset.last()
+        return None
+
+    def get_subsequent_version(self):
+        """
+        Returns the subsequent version of a given document version
+        :return: the subsequent version of a given document version
+        """
+        queryset = DocumentVersion.objects.filter(document=self.document,
+                                                  creation_timestamp__gt=self.creation_timestamp).order_by(
+            "creation_timestamp")
+        if queryset.exists():
+            return queryset.first()
+        return None
