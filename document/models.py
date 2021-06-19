@@ -44,6 +44,7 @@ class Document(models.Model):
         permissions
         :return:
         """
+        # TODO: start certification process
         return Document.objects.create(title=title, author=author, description=description,
                                        require_permission=require_permission)
 

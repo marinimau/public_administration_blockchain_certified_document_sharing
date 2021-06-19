@@ -7,12 +7,10 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
-from django.utils import timezone
 from rest_framework import serializers
 
 from .validators import document_validators
 from contents.messages.get_messages import get_generic_messages
-
 from .models import Document
 
 generic_messages = get_generic_messages()
