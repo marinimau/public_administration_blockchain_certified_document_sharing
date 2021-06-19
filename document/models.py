@@ -10,7 +10,7 @@
 from django.db import models
 from django.utils.timezone import now
 
-from user.models import PaOperator
+from user.models import PaOperator, Citizen
 
 
 class Document(models.Model):
@@ -154,3 +154,54 @@ class DocumentVersion(models.Model):
         if queryset.exists():
             return queryset.first()
         return None
+
+
+class Permission(models.Model):
+    """
+        Permission
+        It represent the view permission for a given document and a given citizen
+    """
+
+    id = models.AutoField(primary_key=True)
+    citizen = models.ForeignKey(Citizen, null=False, on_delete=models.RESTRICT)
+    document = models.ForeignKey(Document, null=False, on_delete=models.RESTRICT)
+
+    class Meta:
+        unique_together = (('citizen', 'document'),)
+
+    def add_permissions(self, citizen, document):
+        """
+        Add view permissions given a citizen and a document
+        :param citizen: the citizen who want to grant permissions
+        :param document: the document object of permissions
+        :return:
+        """
+        self.citizen = citizen
+        self.document = document
+        self.save()
+        return
+
+    @staticmethod
+    def remove_permissions(citizen, document):
+        """
+        Remove view permissions given a citizen and a document
+        :param citizen: the citizen who want to remove permissions
+        :param document: the document object of permissions
+        :return:
+        """
+        queryset = Permission.objects.filter(citizen=citizen, document=document)
+        if queryset.exists():
+            queryset.delete()
+        return
+
+    @staticmethod
+    def check_permissions(citizen, document):
+        """
+        Check view permissions given a citizen and a document
+        :param citizen: the citizen who want to check permissions
+        :param document: the document object of permissions
+        :return:
+        """
+        return Permission.objects.filter(citizen=citizen, document=document).exists()
+
+
