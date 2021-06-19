@@ -1,4 +1,3 @@
-
 #
 #   public_administration_blockchain_certified_document_sharing copyright © 2021 - all rights reserved
 #   Created at: 19/06/21
@@ -8,12 +7,9 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
-
-from django.contrib import admin
-
-from .models import PublicAuthority, PaOperator, Citizen
+from django.apps import AppConfig
 
 
-admin.site.register(PublicAuthority)
-admin.site.register(PaOperator)
-admin.site.register(Citizen)
+class DocumentConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'document'

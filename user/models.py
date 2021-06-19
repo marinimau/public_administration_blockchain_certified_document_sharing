@@ -10,7 +10,7 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-from django_eth.models import EthereumAddressField
+from gnosis.eth.django.models import EthereumAddressField
 
 
 class PublicAuthority(models.Model):
@@ -65,7 +65,7 @@ class Citizen(User):
         LAZ = 'LAZIO'
         MAR = 'MARCHE'
         MOL = 'MOLISE'
-        PAB = 'PROBINCIA-AUTONOMA-BOLZANO'
+        PAB = 'PROVINCIA-AUTONOMA-BOLZANO'
         PAT = 'PROVINCIA-AUTONOMA-TRENTO'
         PMT = 'PIEMONTE'
         PUG = 'PUGLIA'
@@ -77,7 +77,7 @@ class Citizen(User):
         VEN = 'VENETO'
 
     cf = models.CharField(unique=True, max_length=16, null=False)
-    region = models.CharField(choices=Regions.choices, null=False)
+    region = models.CharField(choices=Regions.choices, max_length=30, null=False)
 
     def __str__(self):
         """

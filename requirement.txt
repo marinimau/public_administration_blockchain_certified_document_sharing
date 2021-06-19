@@ -1,4 +1,4 @@
 django
 djangorestframework
 django-qr-code
-django-eth
+gnosis-py
