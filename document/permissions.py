@@ -19,7 +19,7 @@ class DocumentListPermissions(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        return request.user in PaOperator.objects.all()
+        return request.user is not None and PaOperator.objects.filter(username=request.user.username).exists()
 
 
 class DocumentItemPermissions(permissions.BasePermission):

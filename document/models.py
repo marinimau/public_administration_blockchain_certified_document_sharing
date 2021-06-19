@@ -33,7 +33,8 @@ class Document(models.Model):
         """
         return str(self.id) + " - " + self.title
 
-    def create_document(self, title, author, description=None, require_permission=True):
+    @staticmethod
+    def create_document(title, author, description=None, require_permission=True):
         """
         Create a new document
         :param title: the title of the document
@@ -43,12 +44,8 @@ class Document(models.Model):
         permissions
         :return:
         """
-        self.title = title
-        self.description = description
-        self.author = author
-        self.require_permission = require_permission
-        self.save()
-        return
+        return Document.objects.create(title=title, author=author, description=description,
+                                       require_permission=require_permission)
 
     @staticmethod
     def get_document_list():
