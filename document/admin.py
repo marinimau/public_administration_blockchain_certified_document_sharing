@@ -9,4 +9,9 @@
 
 from django.contrib import admin
 
-# Register your models here.
+from .models import Document, DocumentVersion, Permission, Favorite
+
+admin.site.register(Document)
+admin.site.register(DocumentVersion)
+admin.site.register(Permission)
+admin.site.register(Favorite)

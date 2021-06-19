@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     'gnosis',
     'qr_code',
     'user',
-
+    'document',
 ]
 
 MIDDLEWARE = [

@@ -202,7 +202,7 @@ class Permission(models.Model):
         :param document: the document object of permissions
         :return:
         """
-        return Permission.objects.filter(citizen=citizen, document=document).exists()
+        return citizen is not None and Permission.objects.filter(citizen=citizen, document=document).exists()
 
 
 class Favorite(models.Model):
