@@ -13,9 +13,9 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND
 
 from user.models import Citizen
-from .models import Document, Permission
-from .permissions import IsPaOperator, DocumentItemPermissions
-from .serializers import DocumentSerializer, PermissionSerializer
+from .models import Document, Permission, Favorite
+from .permissions import IsPaOperator, DocumentItemPermissions, IsCitizen, IsOwner
+from .serializers import DocumentSerializer, PermissionSerializer, FavoriteSerializer
 from contents.messages.get_messages import get_document_messages
 
 document_messages = get_document_messages()
@@ -127,6 +127,48 @@ class PermissionDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Permission.objects.all()
     serializer_class = PermissionSerializer
     permission_classes = [IsPaOperator]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#   Favorite views
+#   -   Favorite citizen list
+#       - if GET:   list all favorite documents of the authenticated citizen
+#       - if POST: add a document to favorites
+#   -   Favorite item detail:
+#       - if GET: show Favorite item detail
+#       - if DELETE: remove document from favorites
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+class FavoriteOfCitizenList(generics.ListCreateAPIView):
+    """
+    Endpoint for the list of all the favorite documents of the authenticated citizen
+    """
+    queryset = Favorite.objects.all()
+    serializer_class = FavoriteSerializer
+    permission_classes = [IsCitizen]
+    lookup_fields = 'citizen'
+
+    def get_queryset(self):
+        """
+        Get the likes associated to the given citizen
+        :return:
+        """
+        user = self.request.user
+        exists_citizen = user is not None and Citizen.objects.filter(username=user.username).exists()
+        if exists_citizen:
+            citizen = Citizen.objects.get(username=user.username)
+            return Favorite.objects.filter(citizen=citizen)
+        return []
+
+
+class FavoriteDetail(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Endpoint for the single favorite page
+    """
+    queryset = Favorite.objects.all()
+    serializer_class = FavoriteSerializer
+    permission_classes = [IsOwner]
 
 
 # ----------------------------------------------------------------------------------------------------------------------

@@ -223,17 +223,15 @@ class Favorite(models.Model):
     class Meta:
         unique_together = (('citizen', 'document'),)
 
-    def add_to_favorite(self, citizen, document):
+    @staticmethod
+    def add_to_favorite(citizen, document):
         """
         Add to Favorite a document
         :param citizen: the citizen who want to add the document to favorites
         :param document: the document to add
-        :return:
+        :return: The created Favorite instance
         """
-        self.citizen = citizen
-        self.document = document
-        self.save()
-        return
+        return Favorite.objects.create(citizen=citizen, document=document)
 
     @staticmethod
     def remove_from_favorites(citizen, document):

@@ -31,6 +31,16 @@ class IsCitizen(permissions.BasePermission):
         return request.user is not None and Citizen.objects.filter(username=request.user.username).exists()
 
 
+class IsOwner(permissions.BasePermission):
+    """
+    Custom permission: return true if is a Citizen is Owner of an object
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return request.user is not None and Citizen.objects.filter(
+            username=request.user.username).exists() and obj.citizen.username == request.user.username
+
+
 class DocumentItemPermissions(permissions.BasePermission):
     """
     Custom permission to only allow owners of an object to edit it.
