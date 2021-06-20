@@ -6,10 +6,9 @@
 #   Repository: https://github.com/marinimau/public_administration_blockchain_certified_document_sharing
 #   Credits: @marinimau (https://github.com/marinimau)
 #
-from django.utils import timezone
 from rest_framework import serializers
 
-from .validators import document_validators
+from . import validators
 from contents.messages.get_messages import get_generic_messages, get_document_messages
 from .models import Document, Permission, Favorite, DocumentVersion
 
@@ -49,16 +48,16 @@ class DocumentSerializer(serializers.Serializer):
         :param validated_data: the validated data
         :return: The created instance and 201 response or raise a serialization error
         """
-        author = document_validators.validate_author(self.context)
-        title = validated_data.pop('title')
-        description = validated_data.pop('description')
+        author = validators.validate_author(self.context)
+        title = validated_data.pop('title', 'no title')
+        description = validated_data.pop('description', 'no description')
         require_permission = validated_data.pop('require_permission')
         return Document.create_document(title, author, description, require_permission)
 
     id = serializers.ReadOnlyField()
     author = serializers.ReadOnlyField(source='author.username')
-    title = serializers.CharField(min_length=10, max_length=60, required=True)
-    description = serializers.CharField(max_length=500, required=False, default="No description")
+    title = serializers.CharField(min_length=10, max_length=60, required=False)
+    description = serializers.CharField(max_length=500, required=False)
     require_permission = serializers.BooleanField(required=False, default=True)
 
 
@@ -91,8 +90,9 @@ class DocumentVersionSerializer(serializers.Serializer):
         :return: The created instance and 201 response or raise a serialization error
         """
         resource = validated_data.pop('resource')
-        document = document_validators.validate_document(validated_data.pop('document_id'))
-        author = document_validators.validate_version_author(self.context, document)
+        author = validators.validate_author(context=self.context)
+        queryset = Document.objects.filter(author__public_authority=author.public_authority)
+        document = validators.validate_document(validated_data.pop('document_id'), queryset=queryset)
         return DocumentVersion.create_version(author=author, document=document, file_resource=resource)
 
     id = serializers.ReadOnlyField()
@@ -132,8 +132,10 @@ class PermissionSerializer(serializers.Serializer):
         :param validated_data: the validated data
         :return: The created instance and 201 response or raise a serialization error
         """
-        citizen = document_validators.validate_citizen(str.lower(validated_data.pop('cf', 'undefined')))
-        document = document_validators.validate_document(validated_data.pop('document_id'))
+        citizen = validators.validate_citizen(str.lower(validated_data.pop('cf', 'undefined')))
+        operator = validators.validate_author(context=self.context)
+        queryset = Document.objects.filter(author__public_authority=operator.public_authority)
+        document = validators.validate_document(validated_data.pop('document_id'), queryset=queryset)
         if not Permission.check_permissions(citizen=citizen, document=document):
             return Permission.add_permissions(document=document, citizen=citizen)
         else:
@@ -175,8 +177,8 @@ class FavoriteSerializer(serializers.Serializer):
         :param validated_data: the validated data
         :return: The created instance and 201 response or raise a serialization error
         """
-        citizen = document_validators.validate_citizen_from_request(self.context)
-        document = document_validators.validate_document(validated_data.pop('document_id'))
+        citizen = validators.validate_citizen_from_request(self.context)
+        document = validators.validate_document(validated_data.pop('document_id'))
         if (Permission.check_permissions(citizen=citizen,
                                          document=document) or not document.require_permission) and not Favorite.is_favorite(
                 citizen=citizen, document=document):
