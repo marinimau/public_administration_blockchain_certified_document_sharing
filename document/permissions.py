@@ -42,6 +42,22 @@ class IsOwner(permissions.BasePermission):
             username=request.user.username).exists() and obj.citizen.username == request.user.username
 
 
+class IsOperatorSamePublicAuthority(permissions.BasePermission):
+    """
+    Custom write permissions: only an operator of the same PA can write
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        else:
+            exists = request.user is not None and PaOperator.check_if_exists(request.user.username)
+            if exists:
+                operator = PaOperator.objects.get(username=request.user.username)
+                return obj.author.public_authority == operator.public_authority
+        return False
+
+
 class DocumentItemPermissions(permissions.BasePermission):
     """
     Custom permission for Document model
@@ -72,25 +88,3 @@ class DocumentVersionPermissions(DocumentItemPermissions):
     def has_object_permission(self, request, view, obj):
         return super(DocumentVersionPermissions, self).has_object_permission(request, view, obj.document)
 
-
-def check_operator(username, document, write_request, write_accepted):
-    """
-    Return True if the username is associated to an operator an he has works on the same public authority of the author
-    of document
-    :param username: the username
-    :param document: the Document
-    :param write_request: a flag that indicates if the request is a write request
-    :param write_request: a flag that indicates if the request is a write request
-    :param write_accepted:a flag that indicate if the object allow a write request
-    :return:
-    """
-    exists = PaOperator.objects.filter(username=username).exists()
-    if exists:
-        operator = PaOperator.objects.get(username=username)
-        if write_request:
-            if write_accepted:
-                return operator.public_authority == document.author.public_authority
-            return False
-        else:
-            return not document.require_permission
-    return False

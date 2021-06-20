@@ -121,3 +121,12 @@ class Citizen(User):
         :return: true if citizen exists, false otherwise
         """
         return Citizen.objects.filter(cf=cf).exists()
+
+    @staticmethod
+    def check_if_exists_username(username):
+        """
+        Given the CF returns true if citizen exists, false otherwise
+        :param username: the username
+        :return: true if citizen exists, false otherwise
+        """
+        return Citizen.objects.filter(username=username).exists()

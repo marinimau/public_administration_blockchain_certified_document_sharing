@@ -7,14 +7,17 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
-from rest_framework import generics
+from django.db.models import Q
+from rest_framework import generics, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND
 
 from user.models import Citizen, PaOperator
 from .models import Document, Permission, Favorite, DocumentVersion
-from .permissions import IsPaOperator, DocumentItemPermissions, IsCitizen, IsOwner, DocumentVersionPermissions
+from .permissions import IsPaOperator, DocumentItemPermissions, IsCitizen, IsOwner, DocumentVersionPermissions, \
+    IsOperatorSamePublicAuthority
+from .querysets import document_queryset
 from .serializers import DocumentSerializer, PermissionSerializer, FavoriteSerializer, DocumentVersionSerializer
 from contents.messages.get_messages import get_document_messages
 
@@ -32,21 +35,29 @@ document_messages = get_document_messages()
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-class DocumentsList(generics.ListCreateAPIView):
+class DocumentsList(generics.ListAPIView):
     """
     Endpoint for the list of all the Documents
     """
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
-    permission_classes = [IsPaOperator]
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         """
         Get only documents of the same public authority
         :return:
         """
-        operator = PaOperator.objects.get(username=self.request.user.username)
-        return Document.objects.filter(author__public_authority=operator.public_authority)
+        return document_queryset(self)
+
+
+class DocumentsCreation(generics.CreateAPIView):
+    """
+    Endpoint for the list of all the Documents
+    """
+    queryset = Document.objects.all()
+    serializer_class = DocumentSerializer
+    permission_classes = [IsPaOperator]
 
 
 class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -55,15 +66,14 @@ class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
-    permission_classes = [DocumentItemPermissions]
+    permission_classes = [IsOperatorSamePublicAuthority]
 
     def get_queryset(self):
         """
         Get only documents of the same public authority
         :return:
         """
-        operator = PaOperator.objects.get(username=self.request.user.username)
-        return Document.objects.filter(author__public_authority=operator.public_authority)
+        return document_queryset(self)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
