@@ -7,7 +7,6 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
-from django.db.models import Q
 from rest_framework import generics, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -15,9 +14,8 @@ from rest_framework.status import HTTP_404_NOT_FOUND
 
 from user.models import Citizen, PaOperator
 from .models import Document, Permission, Favorite, DocumentVersion
-from .permissions import IsPaOperator, DocumentItemPermissions, IsCitizen, IsOwner, DocumentVersionPermissions, \
-    IsOperatorSamePublicAuthority
-from .querysets import document_queryset
+from .permissions import IsPaOperator, IsCitizen, IsOwner, IsOperatorSamePublicAuthority
+from .querysets import document_queryset, document_version_queryset
 from .serializers import DocumentSerializer, PermissionSerializer, FavoriteSerializer, DocumentVersionSerializer
 from contents.messages.get_messages import get_document_messages
 
@@ -89,25 +87,23 @@ class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-class DocumentsVersionList(generics.ListAPIView):
+class DocumentsVersionList(generics.ListCreateAPIView):
     """
     Endpoint for the list of all the Documents
     """
     queryset = DocumentVersion.objects.all()
     serializer_class = DocumentVersionSerializer
-    permission_classes = [DocumentVersionPermissions]
+    permission_classes = [IsOperatorSamePublicAuthority]
+
+    def perform_create(self, serializer):
+        serializer.save(document_id=self.kwargs['document_id'])
 
     def get_queryset(self):
         """
         Get the version associated to the given document
         :return:
         """
-        document_id = self.kwargs['document_id']
-        exists_document = Document.objects.filter(id=document_id).exists()
-        if exists_document:
-            document = Document.objects.get(id=document_id)
-            return DocumentVersion.objects.filter(document=document)
-        return []
+        return document_version_queryset(self)
 
 
 class DocumentVersionDetail(generics.RetrieveAPIView):
@@ -116,7 +112,14 @@ class DocumentVersionDetail(generics.RetrieveAPIView):
     """
     queryset = DocumentVersion.objects.all()
     serializer_class = DocumentVersionSerializer
-    permission_classes = [DocumentVersionPermissions]
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        """
+        Get the version associated to the given document
+        :return:
+        """
+        return document_version_queryset(self)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

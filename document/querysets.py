@@ -9,9 +9,15 @@
 
 from django.db.models import Q
 
-from document.models import Document, Permission
+from document.models import Document, Permission, DocumentVersion
 from user.models import PaOperator, Citizen
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Document
+#
+# ----------------------------------------------------------------------------------------------------------------------
 
 def document_queryset(caller):
     """
@@ -35,3 +41,22 @@ def document_queryset(caller):
                         require_permission=False))
     return Document.objects.filter(require_permission=False)
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Document Version
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
+def document_version_queryset(caller):
+    """
+    Get the versions associated to the given document
+    :return:
+    """
+    document_id = caller.kwargs['document_id']
+    doc_queryset = document_queryset(caller)
+    exists_document = doc_queryset.filter(id=document_id).exists()
+    if exists_document:
+        document = doc_queryset.get(id=document_id)
+        return DocumentVersion.objects.filter(document=document)
+    return DocumentVersion.objects.none()

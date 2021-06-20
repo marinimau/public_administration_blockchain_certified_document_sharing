@@ -92,7 +92,8 @@ class DocumentVersionSerializer(serializers.Serializer):
         resource = validated_data.pop('resource')
         author = validators.validate_author(context=self.context)
         queryset = Document.objects.filter(author__public_authority=author.public_authority)
-        document = validators.validate_document(validated_data.pop('document_id'), queryset=queryset)
+        document_id = validated_data.pop('document_id')
+        document = validators.validate_document(document_id=document_id, queryset=queryset)
         return DocumentVersion.create_version(author=author, document=document, file_resource=resource)
 
     id = serializers.ReadOnlyField()
@@ -100,8 +101,7 @@ class DocumentVersionSerializer(serializers.Serializer):
     creation_timestamp = serializers.DateTimeField(read_only=True, required=False)
     resource = serializers.FileField(write_only=True, use_url=True, required=True)  # write only
     file_resource = serializers.URLField(read_only=True)  # read only
-    document_id = serializers.IntegerField(required=True, write_only=True)  # read only
-    document = serializers.ReadOnlyField(source='document.id')  # write only
+    document = serializers.ReadOnlyField(source='document.id')
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -190,4 +190,4 @@ class FavoriteSerializer(serializers.Serializer):
     id = serializers.ReadOnlyField()
     document_id = serializers.IntegerField(required=True, write_only=True)
     citizen = serializers.ReadOnlyField(source='citizen.cf')
-    document = serializers.ReadOnlyField(source='document.id')
+    document = DocumentSerializer(read_only=True)
