@@ -56,35 +56,3 @@ class IsOperatorSamePublicAuthority(permissions.BasePermission):
                 operator = PaOperator.objects.get(username=request.user.username)
                 return obj.author.public_authority == operator.public_authority
         return False
-
-
-class DocumentItemPermissions(permissions.BasePermission):
-    """
-    Custom permission for Document model
-    """
-
-    def has_object_permission(self, request, view, obj):
-        is_operator = request.user is not None and PaOperator.objects.filter(username=request.user.username).exists()
-        is_citizen = request.user is not None and Citizen.objects.filter(username=request.user.username).exists()
-        if request.method == 'GET':
-            is_authorized_citizen = False
-            if is_citizen:
-                citizen = Citizen.objects.get(username=request.user.username)
-                is_authorized_citizen = Permission.check_permissions(citizen, obj)
-            return not obj.require_permission or is_operator or is_authorized_citizen
-        if request.method == 'UPDATE' or request.method == 'PUT':
-            return is_operator
-        return False
-
-
-class DocumentVersionPermissions(DocumentItemPermissions):
-    """
-    Custom permission for document version model
-    """
-
-    def has_permission(self, request, view):
-        return False
-
-    def has_object_permission(self, request, view, obj):
-        return super(DocumentVersionPermissions, self).has_object_permission(request, view, obj.document)
-
