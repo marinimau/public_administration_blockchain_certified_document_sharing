@@ -12,10 +12,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND
 
-from user.models import Citizen
-from .models import Document, Permission, Favorite
-from .permissions import IsPaOperator, DocumentItemPermissions, IsCitizen, IsOwner
-from .serializers import DocumentSerializer, PermissionSerializer, FavoriteSerializer
+from user.models import Citizen, PaOperator
+from .models import Document, Permission, Favorite, DocumentVersion
+from .permissions import IsPaOperator, DocumentItemPermissions, IsCitizen, IsOwner, DocumentVersionPermissions
+from .serializers import DocumentSerializer, PermissionSerializer, FavoriteSerializer, DocumentVersionSerializer
 from contents.messages.get_messages import get_document_messages
 
 document_messages = get_document_messages()
@@ -40,6 +40,14 @@ class DocumentsList(generics.ListCreateAPIView):
     serializer_class = DocumentSerializer
     permission_classes = [IsPaOperator]
 
+    def get_queryset(self):
+        """
+        Get only documents of the same public authority
+        :return:
+        """
+        operator = PaOperator.objects.get(username=self.request.user.username)
+        return Document.objects.filter(author__public_authority=operator.public_authority)
+
 
 class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -48,6 +56,57 @@ class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
     permission_classes = [DocumentItemPermissions]
+
+    def get_queryset(self):
+        """
+        Get only documents of the same public authority
+        :return:
+        """
+        operator = PaOperator.objects.get(username=self.request.user.username)
+        return Document.objects.filter(author__public_authority=operator.public_authority)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#   Document Version views
+#   -   documents versions list
+#       - if GET:   list all versions of a document
+#
+#   -   documents versions creation
+#       - if POST:  create a version
+#
+#   -   document version detail:
+#       - if GET: show document version detail
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+class DocumentsVersionList(generics.ListAPIView):
+    """
+    Endpoint for the list of all the Documents
+    """
+    queryset = DocumentVersion.objects.all()
+    serializer_class = DocumentVersionSerializer
+    permission_classes = [DocumentVersionPermissions]
+
+    def get_queryset(self):
+        """
+        Get the version associated to the given document
+        :return:
+        """
+        document_id = self.kwargs['document_id']
+        exists_document = Document.objects.filter(id=document_id).exists()
+        if exists_document:
+            document = Document.objects.get(id=document_id)
+            return DocumentVersion.objects.filter(document=document)
+        return []
+
+
+class DocumentVersionDetail(generics.RetrieveAPIView):
+    """
+    Endpoint for the single document version page
+    """
+    queryset = DocumentVersion.objects.all()
+    serializer_class = DocumentVersionSerializer
+    permission_classes = [DocumentVersionPermissions]
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -81,7 +140,9 @@ class PermissionListDocument(generics.ListAPIView):
         :return:
         """
         document_id = self.kwargs['document_id']
-        exists_document = Document.objects.filter(id=document_id).exists()
+        operator = PaOperator.objects.get(username=self.request.user.username)
+        public_authority_documents = Document.objects.filter(author__public_authority=operator.public_authority)
+        exists_document = public_authority_documents.filter(id=document_id).exists()
         if exists_document:
             document = Document.objects.get(id=document_id)
             return Permission.objects.filter(document=document)
@@ -107,7 +168,9 @@ class PermissionListUser(generics.ListAPIView):
         exists_citizen = Citizen.objects.filter(cf=cf).exists()
         if exists_citizen:
             citizen = Citizen.objects.get(cf=cf)
-            return Permission.objects.filter(citizen=citizen)
+            operator = PaOperator.objects.get(username=self.request.user.username)
+            return Permission.objects.filter(citizen=citizen,
+                                             document__author__public_authority=operator.public_authority)
         return []
 
 
@@ -127,6 +190,14 @@ class PermissionDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Permission.objects.all()
     serializer_class = PermissionSerializer
     permission_classes = [IsPaOperator]
+
+    def get_queryset(self):
+        """
+        Get the permissions associated to document of the same public authority of the operator
+        :return:
+        """
+        operator = PaOperator.objects.get(username=self.request.user.username)
+        return Permission.objects.filter(document__author__public_authority=operator.public_authority)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

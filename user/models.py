@@ -13,6 +13,12 @@ from django.contrib.auth.models import User
 from gnosis.eth.django.models import EthereumAddressField
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   PublicAuthority
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
 class PublicAuthority(models.Model):
     """
         Public Authority model:
@@ -22,6 +28,12 @@ class PublicAuthority(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=40, null=False)
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   PaOperator
+#
+# ----------------------------------------------------------------------------------------------------------------------
 
 class PaOperator(User):
     """
@@ -43,6 +55,21 @@ class PaOperator(User):
         """
         return str(self.operator_code) + " " + str(self.bc_address)
 
+    @staticmethod
+    def check_if_exists(username):
+        """
+        Return true if exists an operator with the given username, false otherwise
+        :param username: the username
+        :return: true if exists an operator with the given username, false otherwise
+        """
+        return PaOperator.objects.filter(username=username)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Citizen
+#
+# ----------------------------------------------------------------------------------------------------------------------
 
 class Citizen(User):
     """

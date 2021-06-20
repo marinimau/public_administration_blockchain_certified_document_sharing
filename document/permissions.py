@@ -8,9 +8,10 @@
 #
 
 from rest_framework import permissions
+from rest_framework.permissions import SAFE_METHODS
 
 from user.models import PaOperator, Citizen
-from .models import Permission
+from .models import Permission, Document
 
 
 class IsPaOperator(permissions.BasePermission):
@@ -43,7 +44,7 @@ class IsOwner(permissions.BasePermission):
 
 class DocumentItemPermissions(permissions.BasePermission):
     """
-    Custom permission to only allow owners of an object to edit it.
+    Custom permission for Document model
     """
 
     def has_object_permission(self, request, view, obj):
@@ -58,3 +59,38 @@ class DocumentItemPermissions(permissions.BasePermission):
         if request.method == 'UPDATE' or request.method == 'PUT':
             return is_operator
         return False
+
+
+class DocumentVersionPermissions(DocumentItemPermissions):
+    """
+    Custom permission for document version model
+    """
+
+    def has_permission(self, request, view):
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        return super(DocumentVersionPermissions, self).has_object_permission(request, view, obj.document)
+
+
+def check_operator(username, document, write_request, write_accepted):
+    """
+    Return True if the username is associated to an operator an he has works on the same public authority of the author
+    of document
+    :param username: the username
+    :param document: the Document
+    :param write_request: a flag that indicates if the request is a write request
+    :param write_request: a flag that indicates if the request is a write request
+    :param write_accepted:a flag that indicate if the object allow a write request
+    :return:
+    """
+    exists = PaOperator.objects.filter(username=username).exists()
+    if exists:
+        operator = PaOperator.objects.get(username=username)
+        if write_request:
+            if write_accepted:
+                return operator.public_authority == document.author.public_authority
+            return False
+        else:
+            return not document.require_permission
+    return False

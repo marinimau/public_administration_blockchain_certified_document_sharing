@@ -13,5 +13,6 @@ messages = {
     'permission_already_exists_error': 'Permission already granted',
     'favorite_add_error': 'You have already add to favorite this document or you not have view permission',
     'document_not_exists_error': 'The document with the given id doesn\'t exists',
+    'different_public_authority_error': 'You cannot add a version of a document owned by a different Authority',
     '404_error': 'Document not found'
 }

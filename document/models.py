@@ -13,6 +13,12 @@ from django.utils.timezone import now
 from user.models import PaOperator, Citizen
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Document
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
 class Document(models.Model):
     """
         Document model
@@ -66,6 +72,12 @@ class Document(models.Model):
         return id is not None and Document.objects.filter(id=document_id).exists()
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Document Version
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
 class DocumentVersion(models.Model):
     """
         Document Version model
@@ -80,6 +92,9 @@ class DocumentVersion(models.Model):
     file_resource = models.FileField(default=None)
     document = models.ForeignKey(Document, null=False, on_delete=models.RESTRICT)
 
+    class Meta:
+        unique_together = (('creation_timestamp', 'document'),)
+
     indexes = [
         models.Index(fields=['creation_timestamp', ]),
     ]
@@ -91,7 +106,8 @@ class DocumentVersion(models.Model):
         """
         return str(self.document.id) + " - " + str(self.creation_timestamp)
 
-    def create_version(self, author, document, file_resource):
+    @staticmethod
+    def create_version(author, document, file_resource):
         """
         Create a new document version
         :param author: tha PA operator that requires creation
@@ -99,11 +115,7 @@ class DocumentVersion(models.Model):
         :param file_resource: The attached file
         :return:
         """
-        self.author = author
-        self.document = document
-        self.file_resource = file_resource
-        self.save()
-        return
+        return DocumentVersion.objects.create(author=author, document=document, file_resource=file_resource)
 
     @staticmethod
     def get_versions_list(document):
@@ -163,6 +175,12 @@ class DocumentVersion(models.Model):
         return None
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Permission
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
 class Permission(models.Model):
     """
         Permission
@@ -209,6 +227,12 @@ class Permission(models.Model):
         """
         return citizen is not None and Permission.objects.filter(citizen=citizen, document=document).exists()
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Favorite
+#
+# ----------------------------------------------------------------------------------------------------------------------
 
 class Favorite(models.Model):
     """

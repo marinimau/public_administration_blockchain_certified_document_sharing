@@ -6,12 +6,12 @@
 #   Repository: https://github.com/marinimau/public_administration_blockchain_certified_document_sharing
 #   Credits: @marinimau (https://github.com/marinimau)
 #
-
+from django.utils import timezone
 from rest_framework import serializers
 
 from .validators import document_validators
 from contents.messages.get_messages import get_generic_messages, get_document_messages
-from .models import Document, Permission, Favorite
+from .models import Document, Permission, Favorite, DocumentVersion
 
 generic_messages = get_generic_messages()
 document_messages = get_document_messages()
@@ -64,6 +64,48 @@ class DocumentSerializer(serializers.Serializer):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
+#   Document Version Serializer
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
+class DocumentVersionSerializer(serializers.Serializer):
+    """
+    Document Version serializer
+    this is the serializer of the DocumentVersion model
+    """
+
+    def update(self, instance, validated_data):
+        """
+        Update serializer (not permitted)
+        :param instance: the instance to update
+        :param validated_data: the validate data
+        :return: always an error message, it's impossible to update this model
+        """
+        error = {'message': generic_messages['update_not_allowed_error']}
+        raise serializers.ValidationError(error)
+
+    def create(self, validated_data):
+        """
+        Creation serializer
+        :param validated_data: the validated data
+        :return: The created instance and 201 response or raise a serialization error
+        """
+        resource = validated_data.pop('resource')
+        document = document_validators.validate_document(validated_data.pop('document_id'))
+        author = document_validators.validate_version_author(self.context, document)
+        return DocumentVersion.create_version(author=author, document=document, file_resource=resource)
+
+    id = serializers.ReadOnlyField()
+    author = serializers.ReadOnlyField(source='author.username')
+    creation_timestamp = serializers.DateTimeField(read_only=True, required=False)
+    resource = serializers.FileField(write_only=True, use_url=True, required=True)  # write only
+    file_resource = serializers.URLField(read_only=True)  # read only
+    document_id = serializers.IntegerField(required=True, write_only=True)  # read only
+    document = serializers.ReadOnlyField(source='document.id')  # write only
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
 #   Permissions Serializer
 #
 # ----------------------------------------------------------------------------------------------------------------------
@@ -77,7 +119,7 @@ class PermissionSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         """
         Update serializer (not permitted)
-        :param instance: the document instance to update
+        :param instance: the instance to update
         :param validated_data: the validate data
         :return: always an error message, it's impossible to update this model
         """

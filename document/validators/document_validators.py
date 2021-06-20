@@ -29,6 +29,20 @@ def validate_author(context):
     raise serializers.ValidationError(error)
 
 
+def validate_version_author(context, document):
+    """
+    Return the author of the document version or raise a serialization error if it's not valid
+    :param context: the request context
+    :param document: the document container
+    :return: the author of the document version or raise a serialization error if it's not valid
+    """
+    version_author = validate_author(context)
+    if version_author.public_authority == document.author.public_authority:
+        return version_author
+    error = {'message': document_messages['different_public_authority_error']}
+    raise serializers.ValidationError(error)
+
+
 def validate_citizen(cf):
     """
     Return a citizen object associated to the CF or raise a serialization error
