@@ -171,7 +171,11 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         :return:
         """
         username = self.request.user.username
-        return Favorite.objects.filter(citizen__username=username)
+        queryset = Favorite.objects.filter(citizen__username=username)
+        document = self.request.query_params.get('document')
+        if document is not None:
+            queryset = queryset.filter(document__id=document)
+        return queryset
 
     def get_serializer_class(self):
         """
