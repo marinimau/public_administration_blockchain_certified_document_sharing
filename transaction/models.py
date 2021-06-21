@@ -11,7 +11,6 @@ from gnosis.eth.django.models import EthereumAddressField
 
 from django.db import models
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 #
 #   Abstract Transaction
@@ -97,9 +96,21 @@ class DocumentVersionTransaction(AbstractTransaction):
     Document Version Transaction
     This class represent the model of transaction for Document Version model
     """
+
+    class ValidationStatus(models.TextChoices):
+        """
+        Transaction status enumeration
+        Valid only for document transaction
+        """
+        PENDING = 'PENDING'
+        VALID = 'VALID'
+        ALTERED = 'ALTERED'
+
     hash_fingerprint = models.CharField(max_length=256, null=False)
     document_version = models.OneToOneField(DocumentVersion, on_delete=models.RESTRICT, null=False)
     download_url = models.URLField(null=False)
+    validation_status = models.CharField(null=False, max_length=7, choices=ValidationStatus.choices,
+                                         default=ValidationStatus.PENDING)
 
     @staticmethod
     def create_document_version_transaction(document_version, operator):
@@ -147,7 +158,7 @@ class DocumentVersionTransaction(AbstractTransaction):
         """
         # TODO:
         #   1. get the transaction stored in the bc
-        #   2. compare the stored fingerprint with the fingerprint calculated on the documen_version.file_resource
+        #   2. compare the stored fingerprint with the fingerprint calculated on the document_version.file_resource
         #   3. return the validation status
         #
         pass

@@ -21,8 +21,8 @@ from gnosis.eth.django.models import EthereumAddressField
 
 class PublicAuthority(models.Model):
     """
-        Public Authority model:
-        It represents the public authority to which the public operator belongs
+    Public Authority model:
+    It represents the public authority to which the public operator belongs
     """
 
     id = models.AutoField(primary_key=True)
@@ -37,10 +37,10 @@ class PublicAuthority(models.Model):
 
 class PaOperator(User):
     """
-        PaOperator model:
-        It represents the staff user. It is a subclass of the standard user.
-        PaOperator can create document and certificate them. To accomplish this task it need a Wallet address and the
-        secret token.
+    PaOperator model:
+    It represents the staff user. It is a subclass of the standard user.
+    PaOperator can create document and certificate them. To accomplish this task it need a Wallet address and the
+    secret token.
     """
 
     operator_code = models.CharField(unique=True, max_length=10, null=False)
@@ -73,9 +73,9 @@ class PaOperator(User):
 
 class Citizen(User):
     """
-        Citizen model:
-        It represent the italian citizen. It is a subclass of the standard user.
-        Citizen can only view / download document, add the to his favorites and view the versions.
+    Citizen model:
+    It represent the italian citizen. It is a subclass of the standard user.
+    Citizen can only view / download document, add the to his favorites and view the versions.
     """
 
     class Regions(models.TextChoices):

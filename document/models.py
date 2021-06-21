@@ -21,9 +21,9 @@ from user.models import PaOperator, Citizen
 
 class Document(models.Model):
     """
-        Document model
-        It represent a container of Document version.
-        At the Document model are associated document title and description, favorites and view permissions
+    Document model
+    It represent a container of Document version.
+    At the Document model are associated document title and description, favorites and view permissions
     """
 
     id = models.AutoField(primary_key=True)
@@ -80,10 +80,10 @@ class Document(models.Model):
 
 class DocumentVersion(models.Model):
     """
-        Document Version model
-        It specifies a version for the given document
-        Version contains a file resource and a timestamp
-        Author of the version may be different from document author
+    Document Version model
+    It specifies a version for the given document
+    Version contains a file resource and a timestamp
+    Author of the version may be different from document author
     """
 
     id = models.AutoField(primary_key=True)
@@ -183,8 +183,8 @@ class DocumentVersion(models.Model):
 
 class Permission(models.Model):
     """
-        Permission
-        It represent the view permission for a given document and a given citizen
+    Permission
+    It represent the view permission for a given document and a given citizen
     """
 
     id = models.AutoField(primary_key=True)
@@ -236,8 +236,8 @@ class Permission(models.Model):
 
 class Favorite(models.Model):
     """
-        Favorite
-        It represent the favorite document of a User
+    Favorite
+    It represent the favorite document of a User
     """
 
     id = models.AutoField(primary_key=True)
