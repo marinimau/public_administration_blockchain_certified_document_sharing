@@ -55,15 +55,6 @@ class PaOperator(User):
         """
         return str(self.operator_code) + " " + str(self.bc_address)
 
-    @staticmethod
-    def check_if_exists(username):
-        """
-        Return true if exists an operator with the given username, false otherwise
-        :param username: the username
-        :return: true if exists an operator with the given username, false otherwise
-        """
-        return PaOperator.objects.filter(username=username).exists()
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -113,20 +104,3 @@ class Citizen(User):
         """
         return str(self.cf)
 
-    @staticmethod
-    def check_if_exists(cf):
-        """
-        Given the CF returns true if citizen exists, false otherwise
-        :param cf:
-        :return: true if citizen exists, false otherwise
-        """
-        return Citizen.objects.filter(cf=cf).exists()
-
-    @staticmethod
-    def check_if_exists_username(username):
-        """
-        Given the CF returns true if citizen exists, false otherwise
-        :param username: the username
-        :return: true if citizen exists, false otherwise
-        """
-        return Citizen.objects.filter(username=username).exists()

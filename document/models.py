@@ -39,38 +39,6 @@ class Document(models.Model):
         """
         return str(self.id) + " - " + self.title
 
-    @staticmethod
-    def create_document(title, author, description=None, require_permission=True):
-        """
-        Create a new document
-        :param title: the title of the document
-        :param description: the description of the document
-        :param author: the PA operator that required the creation
-        :param require_permission: a flag that indicates if the document il public for all citizen or requires
-        permissions
-        :return:
-        """
-        # TODO: start certification process
-        return Document.objects.create(title=title, author=author, description=description,
-                                       require_permission=require_permission)
-
-    @staticmethod
-    def get_document_list():
-        """
-        Return the list of the documents
-        :return:
-        """
-        return Document.objects.all()
-
-    @staticmethod
-    def check_if_exists(document_id):
-        """
-        Given the ID returns true if the document exists, false otherwise
-        :param document_id: the id of the document
-        :return: true if the document exists, false otherwise
-        """
-        return id is not None and Document.objects.filter(id=document_id).exists()
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -106,74 +74,6 @@ class DocumentVersion(models.Model):
         """
         return str(self.document.id) + " - " + str(self.creation_timestamp)
 
-    @staticmethod
-    def create_version(author, document, file_resource):
-        """
-        Create a new document version
-        :param author: tha PA operator that requires creation
-        :param document: the Document container
-        :param file_resource: The attached file
-        :return:
-        """
-        return DocumentVersion.objects.create(author=author, document=document, file_resource=file_resource)
-
-    @staticmethod
-    def get_versions_list(document):
-        """
-        Returns the list of version for a given document
-        :param document: the Document container
-        :return: the list of the version for the given Document
-        """
-        return DocumentVersion.objects.filter(document=document)
-
-    @staticmethod
-    def get_first_version(document):
-        """
-        Returns the first version of a given document
-        :param document: the Document container
-        :return: the first version of a given document
-        """
-        queryset = DocumentVersion.objects.filter(document=document).order_by("creation_timestamp")
-        if queryset.exists():
-            return queryset.first()
-        return None
-
-    @staticmethod
-    def get_last_version(document):
-        """
-        Returns the last version of a given document
-        :param document: the Document container
-        :return: the last version of a given document
-        """
-        queryset = DocumentVersion.objects.filter(document=document).order_by("creation_timestamp")
-        if queryset.exists():
-            return queryset.last()
-        return None
-
-    def get_previous_version(self):
-        """
-        Returns the previous version of a given document version
-        :return: the previous version of a given document version
-        """
-        queryset = DocumentVersion.objects.filter(document=self.document,
-                                                  creation_timestamp__lt=self.creation_timestamp).order_by(
-            "creation_timestamp")
-        if queryset.exists():
-            return queryset.last()
-        return None
-
-    def get_subsequent_version(self):
-        """
-        Returns the subsequent version of a given document version
-        :return: the subsequent version of a given document version
-        """
-        queryset = DocumentVersion.objects.filter(document=self.document,
-                                                  creation_timestamp__gt=self.creation_timestamp).order_by(
-            "creation_timestamp")
-        if queryset.exists():
-            return queryset.first()
-        return None
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -193,16 +93,6 @@ class Permission(models.Model):
 
     class Meta:
         unique_together = (('citizen', 'document'),)
-
-    @staticmethod
-    def check_permissions(citizen, document):
-        """
-        Check view permissions given a citizen and a document
-        :param citizen: the citizen who want to check permissions
-        :param document: the document object of permissions
-        :return:
-        """
-        return citizen is not None and Permission.objects.filter(citizen=citizen, document=document).exists()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

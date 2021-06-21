@@ -50,7 +50,7 @@ class DocumentVersionPermission(permissions.BasePermission):
         if request.method in SAFE_METHODS:
             return permissions.AllowAny
         else:
-            exists = request.user is not None and PaOperator.check_if_exists(request.user.username)
+            exists = request.user is not None and PaOperator.objects.filter(username=request.user.username).exists()
             if exists:
                 operator = PaOperator.objects.get(username=request.user.username)
                 document_id = request.resolver_match.kwargs.get('document_id')
@@ -75,7 +75,7 @@ class DocumentPermissions(permissions.BasePermission):
         if request.method in SAFE_METHODS:
             return permissions.AllowAny
         else:
-            return request.user is not None and PaOperator.check_if_exists(request.user.username)
+            return request.user is not None and PaOperator.objects.filter(username=request.user.username).exists()
 
     def has_object_permission(self, request, view, obj):
         if request.method == 'DELETE':
@@ -83,7 +83,7 @@ class DocumentPermissions(permissions.BasePermission):
         if request.method in SAFE_METHODS:
             return permissions.AllowAny
         else:
-            exists = request.user is not None and PaOperator.check_if_exists(request.user.username)
+            exists = request.user is not None and PaOperator.objects.filter(username=request.user.username).exists()
             if exists:
                 operator = PaOperator.objects.get(username=request.user.username)
                 return obj.author.public_authority == operator.public_authority

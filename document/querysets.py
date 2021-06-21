@@ -26,13 +26,13 @@ def document_queryset(request):
     """
     if request.user is not None:
         # is authenticated
-        if PaOperator.check_if_exists(request.user.username):
+        if PaOperator.objects.filter(username=request.user.username).exists():
             # is an operator
             operator = PaOperator.objects.get(username=request.user.username)
             return Document.objects.filter(
                 Q(author__public_authority=operator.public_authority) | Q(require_permission=False))
         else:
-            if Citizen.check_if_exists_username(username=request.user.username):
+            if Citizen.objects.filter(username=request.user.username).exists():
                 # is a citizen
                 citizen = Citizen.objects.get(username=request.user.username)
                 filtered_permissions = Permission.objects.filter(citizen=citizen)
