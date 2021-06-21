@@ -14,6 +14,12 @@ from document.models import Document
 from user.models import PaOperator, Citizen
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Generic
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
 class IsPaOperator(permissions.BasePermission):
     """
     Custom permission: return true if PA operator
@@ -42,29 +48,11 @@ class IsOwner(permissions.BasePermission):
             username=request.user.username).exists() and obj.citizen.username == request.user.username
 
 
-class DocumentVersionPermission(permissions.BasePermission):
-    """
-    Custom permissions for document version
-    """
-    def has_permission(self, request, view):
-        if request.method in SAFE_METHODS:
-            return permissions.AllowAny
-        else:
-            exists = request.user is not None and PaOperator.objects.filter(username=request.user.username).exists()
-            if exists:
-                operator = PaOperator.objects.get(username=request.user.username)
-                document_id = request.resolver_match.kwargs.get('document_id')
-                if Document.objects.filter(id=document_id).exists():
-                    obj = Document.objects.get(id=document_id)
-                    return obj.author.public_authority == operator.public_authority
-        return False
-
-    def has_object_permission(self, request, view, obj):
-        if request.method == 'GET':
-            return True
-        else:
-            return False
-
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Document
+#
+# ----------------------------------------------------------------------------------------------------------------------
 
 class DocumentPermissions(permissions.BasePermission):
     """
@@ -88,3 +76,33 @@ class DocumentPermissions(permissions.BasePermission):
                 operator = PaOperator.objects.get(username=request.user.username)
                 return obj.author.public_authority == operator.public_authority
         return False
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Document Version
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
+class DocumentVersionPermission(permissions.BasePermission):
+    """
+    Custom permissions for document version
+    """
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return permissions.AllowAny
+        else:
+            exists = request.user is not None and PaOperator.objects.filter(username=request.user.username).exists()
+            if exists:
+                operator = PaOperator.objects.get(username=request.user.username)
+                document_id = request.resolver_match.kwargs.get('document_id')
+                if Document.objects.filter(id=document_id).exists():
+                    obj = Document.objects.get(id=document_id)
+                    return obj.author.public_authority == operator.public_authority
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        if request.method == 'GET':
+            return True
+        else:
+            return False

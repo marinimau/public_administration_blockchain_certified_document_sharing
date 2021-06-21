@@ -25,7 +25,6 @@ class DocumentTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentTransaction
         fields = '__all__'
-        read_only_fields = '__all__'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -38,6 +37,5 @@ class DocumentVersionTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentVersionTransaction
         fields = '__all__'
-        read_only_fields = '__all__'
 
 
