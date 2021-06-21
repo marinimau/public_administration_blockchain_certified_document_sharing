@@ -13,6 +13,7 @@ from user.serializers import PaOperatorSerializer, CitizenSerializer
 from . import validators
 from contents.messages.get_messages import get_generic_messages, get_document_messages
 from .models import Document, Permission, Favorite, DocumentVersion
+from .querysets import document_queryset
 
 generic_messages = get_generic_messages()
 document_messages = get_document_messages()
@@ -102,7 +103,12 @@ class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
         fields = '__all__'
-        read_only_fields = ['id', 'document', 'citizen']
+        read_only_fields = ['id']
+
+    def validate(self, data):
+        if data['document'] not in document_queryset(self.context['request']):
+            raise serializers.ValidationError(document_messages['document_does_not_exists'])
+        return data
 
 
 class PermissionSerializerReadOnly(PermissionSerializer):
@@ -128,7 +134,15 @@ class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorite
         fields = ['id', 'citizen', 'document']
-        read_only_fields = ['id', 'citizen', 'document']
+        read_only_fields = ['id', 'citizen']
+
+    def validate(self, data):
+        if data['document'] not in document_queryset(self.context['request']):
+            raise serializers.ValidationError(document_messages['document_does_not_exists'])
+        if Favorite.objects.filter(citizen__username=self.context['request'].user.username,
+                                   document=data['document']).exists():
+            raise serializers.ValidationError(document_messages['favorite_already_exists'])
+        return data
 
 
 class FavoriteSerializerReadOnly(FavoriteSerializer):

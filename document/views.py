@@ -51,7 +51,7 @@ class DocumentsViewSet(viewsets.ModelViewSet):
         Get only documents of the same public authority
         :return:
         """
-        return document_queryset(self)
+        return document_queryset(self.request)
 
     def get_serializer_class(self):
         """

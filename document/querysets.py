@@ -19,22 +19,22 @@ from user.models import PaOperator, Citizen
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-def document_queryset(caller):
+def document_queryset(request):
     """
     Get only documents of the same public authority
     :return:
     """
-    if caller.request.user is not None:
+    if request.user is not None:
         # is authenticated
-        if PaOperator.check_if_exists(caller.request.user.username):
+        if PaOperator.check_if_exists(request.user.username):
             # is an operator
-            operator = PaOperator.objects.get(username=caller.request.user.username)
+            operator = PaOperator.objects.get(username=request.user.username)
             return Document.objects.filter(
                 Q(author__public_authority=operator.public_authority) | Q(require_permission=False))
         else:
-            if Citizen.check_if_exists_username(username=caller.request.user.username):
+            if Citizen.check_if_exists_username(username=request.user.username):
                 # is a citizen
-                citizen = Citizen.objects.get(username=caller.request.user.username)
+                citizen = Citizen.objects.get(username=request.user.username)
                 filtered_permissions = Permission.objects.filter(citizen=citizen)
                 return Document.objects.filter(
                     Q(id__in=[permission.document.id for permission in filtered_permissions]) | Q(
@@ -76,22 +76,3 @@ def permission_all_queryset(caller):
     operator = PaOperator.objects.get(username=caller.request.user.username)
     return Permission.objects.filter(document__author__public_authority=operator.public_authority)
 
-
-def permission_by_document_queryset(caller):
-    """
-    Get the permissions associated to the given document (only operator PA's document)
-    :return:
-    """
-    public_authority_documents_permissions = permission_all_queryset(caller=caller)
-    document_id = caller.kwargs['document_id']
-    return public_authority_documents_permissions.filter(document__id=document_id)
-
-
-def permission_by_citizen_queryset(caller):
-    """
-    Get the permissions associated to the given user (only operator PA's document)
-    :return:
-    """
-    public_authority_documents_permissions = permission_all_queryset(caller=caller)
-    cf = str.lower(caller.kwargs['cf'])
-    return public_authority_documents_permissions.filter(citizen__cf=cf)

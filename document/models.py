@@ -224,12 +224,3 @@ class Favorite(models.Model):
     class Meta:
         unique_together = (('citizen', 'document'),)
 
-    @staticmethod
-    def is_favorite(citizen, document):
-        """
-        Check if document is in citizen favorites
-        :param citizen: the citizen who want to check favorites
-        :param document: the document
-        :return:
-        """
-        return Favorite.objects.filter(citizen=citizen, document=document).exists()
