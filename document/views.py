@@ -7,16 +7,17 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND
 
 from user.models import Citizen, PaOperator
 from .models import Document, Permission, Favorite, DocumentVersion
-from .permissions import IsPaOperator, IsCitizen, IsOwner, IsOperatorSamePublicAuthority
+from .permissions import IsPaOperator, IsCitizen, IsOwner, IsOperatorSamePublicAuthority, DocumentPermissions
 from .querysets import document_queryset, document_version_queryset
-from .serializers import DocumentSerializer, PermissionSerializer, FavoriteSerializer, DocumentVersionSerializer
+from .serializers import DocumentSerializer, PermissionSerializer, FavoriteSerializer, DocumentVersionSerializer, \
+    FavoriteSerializer2, DocumentSerializerReadOnly
 from contents.messages.get_messages import get_document_messages
 
 document_messages = get_document_messages()
@@ -33,13 +34,21 @@ document_messages = get_document_messages()
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-class DocumentsList(generics.ListAPIView):
+class DocumentsViewSet(viewsets.ModelViewSet):
     """
     Endpoint for the list of all the Documents
     """
     queryset = Document.objects.all()
-    serializer_class = DocumentSerializer
-    permission_classes = [permissions.AllowAny]
+    serializer_class = DocumentSerializerReadOnly
+    permission_classes = [DocumentPermissions]
+
+    def perform_create(self, serializer):
+        """
+        Pass custom parameter to serializer
+        :param serializer: the serializer
+        :return:
+        """
+        serializer.save(author=PaOperator.objects.get(id=self.request.user.id))
 
     def get_queryset(self):
         """
@@ -48,30 +57,14 @@ class DocumentsList(generics.ListAPIView):
         """
         return document_queryset(self)
 
-
-class DocumentsCreation(generics.CreateAPIView):
-    """
-    Endpoint for the list of all the Documents
-    """
-    queryset = Document.objects.all()
-    serializer_class = DocumentSerializer
-    permission_classes = [IsPaOperator]
-
-
-class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Endpoint for the single document page
-    """
-    queryset = Document.objects.all()
-    serializer_class = DocumentSerializer
-    permission_classes = [IsOperatorSamePublicAuthority]
-
-    def get_queryset(self):
+    def get_serializer_class(self):
         """
-        Get only documents of the same public authority
-        :return:
+        Get different serializer for post request
+        :return: the serializer
         """
-        return document_queryset(self)
+        if self.request.method == 'POST':
+            return DocumentSerializer
+        return DocumentSerializerReadOnly
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -85,7 +78,6 @@ class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
 #   -   document version detail:
 #       - if GET: show document version detail
 # ----------------------------------------------------------------------------------------------------------------------
-
 
 class DocumentsVersionList(generics.ListCreateAPIView):
     """
@@ -229,9 +221,17 @@ class FavoriteOfCitizenList(generics.ListCreateAPIView):
     Endpoint for the list of all the favorite documents of the authenticated citizen
     """
     queryset = Favorite.objects.all()
-    serializer_class = FavoriteSerializer
+    serializer_class = FavoriteSerializer2
     permission_classes = [IsCitizen]
     lookup_fields = 'citizen'
+
+    def perform_create(self, serializer):
+        """
+        Auto get citizen from request
+        :param serializer:
+        :return:
+        """
+        serializer.save(citizen=Citizen.objects.get(username=self.request.user.username))
 
     def get_queryset(self):
         """
@@ -251,8 +251,16 @@ class FavoriteDetail(generics.RetrieveUpdateDestroyAPIView):
     Endpoint for the single favorite page
     """
     queryset = Favorite.objects.all()
-    serializer_class = FavoriteSerializer
-    permission_classes = [IsOwner]
+    serializer_class = FavoriteSerializer2
+    permission_classes = [IsCitizen]
+
+    def get_queryset(self):
+        """
+        Get the likes associated to the given citizen
+        :return:
+        """
+        citizen = Citizen.objects.get(username=self.request.user.username)
+        return Favorite.objects.filter(citizen=citizen)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

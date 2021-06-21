@@ -62,7 +62,7 @@ class PaOperator(User):
         :param username: the username
         :return: true if exists an operator with the given username, false otherwise
         """
-        return PaOperator.objects.filter(username=username)
+        return PaOperator.objects.filter(username=username).exists()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

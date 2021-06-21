@@ -55,3 +55,27 @@ class IsOperatorSamePublicAuthority(permissions.BasePermission):
                 operator = PaOperator.objects.get(username=request.user.username)
                 return obj.author.public_authority == operator.public_authority
         return False
+
+
+class DocumentPermissions(permissions.BasePermission):
+    """
+    Custom permissions for model Document
+    """
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return permissions.AllowAny
+        else:
+            return request.user is not None and PaOperator.check_if_exists(request.user.username)
+
+    def has_object_permission(self, request, view, obj):
+        if request.method == 'DELETE':
+            return False
+        if request.method in SAFE_METHODS:
+            return permissions.AllowAny
+        else:
+            exists = request.user is not None and PaOperator.check_if_exists(request.user.username)
+            if exists:
+                operator = PaOperator.objects.get(username=request.user.username)
+                return obj.author.public_authority == operator.public_authority
+        return False

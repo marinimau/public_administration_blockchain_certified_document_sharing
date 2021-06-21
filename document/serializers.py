@@ -9,6 +9,7 @@
 
 from rest_framework import serializers
 
+from user.serializers import PaOperatorSerializer
 from . import validators
 from contents.messages.get_messages import get_generic_messages, get_document_messages
 from .models import Document, Permission, Favorite, DocumentVersion
@@ -23,43 +24,24 @@ document_messages = get_document_messages()
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-
-class DocumentSerializer(serializers.Serializer):
+class DocumentSerializer(serializers.ModelSerializer):
     """
     Document serializer
     this is the serializer of the Document model
     """
 
-    def update(self, instance, validated_data):
-        """
-        Update serializer
-        :param instance: the document instance to update
-        :param validated_data: the validate data
-        :return: the updated instance
-        """
-        instance.title = validated_data.pop('title', instance.title)
-        instance.description = validated_data.pop('description', instance.description)
-        instance.require_permission = validated_data.pop('require_permission', instance.require_permission)
-        instance.save()
-        return instance
+    class Meta:
+        model = Document
+        fields = '__all__'
+        read_only_fields = ['id', 'author']
 
-    def create(self, validated_data):
-        """
-        Creation serializer
-        :param validated_data: the validated data
-        :return: The created instance and 201 response or raise a serialization error
-        """
-        author = validators.validate_author(self.context)
-        title = validated_data.pop('title', 'no title')
-        description = validated_data.pop('description', 'no description')
-        require_permission = validated_data.pop('require_permission')
-        return Document.create_document(title, author, description, require_permission)
 
-    id = serializers.ReadOnlyField()
-    author = serializers.ReadOnlyField(source='author.username')
-    title = serializers.CharField(min_length=10, max_length=60, required=False)
-    description = serializers.CharField(max_length=500, required=False)
-    require_permission = serializers.BooleanField(required=False, default=True)
+class DocumentSerializerReadOnly(DocumentSerializer):
+    """
+    Document serializer for read request
+    this is the serializer print also the operator data
+    """
+    author = PaOperatorSerializer()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -111,43 +93,16 @@ class DocumentVersionSerializer(serializers.Serializer):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-class PermissionSerializer(serializers.Serializer):
+class PermissionSerializer(serializers.ModelSerializer):
     """
     Permission serializer
     this is the serializer of the Permission model
     """
 
-    def update(self, instance, validated_data):
-        """
-        Update serializer (not permitted)
-        :param instance: the instance to update
-        :param validated_data: the validate data
-        :return: always an error message, it's impossible to update this model
-        """
-        error = {'message': generic_messages['update_not_allowed_error']}
-        raise serializers.ValidationError(error)
-
-    def create(self, validated_data):
-        """
-        Creation serializer
-        :param validated_data: the validated data
-        :return: The created instance and 201 response or raise a serialization error
-        """
-        citizen = validators.validate_citizen(str.lower(validated_data.pop('cf', 'undefined')))
-        operator = validators.validate_author(context=self.context)
-        queryset = Document.objects.filter(author__public_authority=operator.public_authority)
-        document = validators.validate_document(validated_data.pop('document_id'), queryset=queryset)
-        if not Permission.check_permissions(citizen=citizen, document=document):
-            return Permission.add_permissions(document=document, citizen=citizen)
-        else:
-            error = {'message': document_messages['permission_already_exists_error']}
-            raise serializers.ValidationError(error)
-
-    id = serializers.ReadOnlyField()
-    cf = serializers.CharField(max_length=16, min_length=16, write_only=True, required=True)
-    document_id = serializers.IntegerField(required=True, write_only=True)
-    citizen = serializers.ReadOnlyField(source='citizen.cf')
-    document = serializers.ReadOnlyField(source='document.id')
+    class Meta:
+        model = Permission
+        fields = '__all__'
+        read_only_fields = ['id']
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -192,3 +147,18 @@ class FavoriteSerializer(serializers.Serializer):
     document_id = serializers.IntegerField(required=True, write_only=True)
     citizen = serializers.ReadOnlyField(source='citizen.cf')
     document = DocumentSerializer(read_only=True)
+
+
+class FavoriteSerializer2(serializers.ModelSerializer):
+    """
+    Favorite serializer
+    this is the serializer of the Favorite model
+    """
+
+    class Meta:
+        model = Favorite
+        fields = ['id', 'citizen', 'document']
+        read_only_fields = ['id', 'document']
+
+    document = DocumentSerializer(read_only=True)
+
