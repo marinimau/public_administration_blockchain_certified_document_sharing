@@ -10,6 +10,7 @@
 from rest_framework import permissions
 from rest_framework.permissions import SAFE_METHODS
 
+from document.models import Document
 from user.models import PaOperator, Citizen
 
 
@@ -41,20 +42,28 @@ class IsOwner(permissions.BasePermission):
             username=request.user.username).exists() and obj.citizen.username == request.user.username
 
 
-class IsOperatorSamePublicAuthority(permissions.BasePermission):
+class DocumentVersionPermission(permissions.BasePermission):
     """
-    Custom write permissions: only an operator of the same PA can write
+    Custom permissions for document version
     """
-
-    def has_object_permission(self, request, view, obj):
+    def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
-            return True
+            return permissions.AllowAny
         else:
             exists = request.user is not None and PaOperator.check_if_exists(request.user.username)
             if exists:
                 operator = PaOperator.objects.get(username=request.user.username)
-                return obj.author.public_authority == operator.public_authority
+                document_id = request.resolver_match.kwargs.get('document_id')
+                if Document.objects.filter(id=document_id).exists():
+                    obj = Document.objects.get(id=document_id)
+                    return obj.author.public_authority == operator.public_authority
         return False
+
+    def has_object_permission(self, request, view, obj):
+        if request.method == 'GET':
+            return True
+        else:
+            return False
 
 
 class DocumentPermissions(permissions.BasePermission):

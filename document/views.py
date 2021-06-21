@@ -7,18 +7,18 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
-from rest_framework import generics, permissions, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND
 
 from user.models import Citizen, PaOperator
 from .models import Document, Permission, Favorite, DocumentVersion
-from .permissions import IsPaOperator, IsCitizen, IsOperatorSamePublicAuthority, DocumentPermissions
+from .permissions import IsPaOperator, IsCitizen, DocumentPermissions, DocumentVersionPermission
 from .querysets import document_queryset, document_version_queryset, permission_all_queryset
 from .serializers import DocumentSerializer, PermissionSerializer, DocumentVersionSerializer, \
     DocumentSerializerReadOnly, PermissionSerializerReadOnly, FavoriteSerializer, \
-    FavoriteSerializerReadOnly
+    FavoriteSerializerReadOnly, DocumentVersionSerializerReadOnly
 from contents.messages.get_messages import get_document_messages
 
 document_messages = get_document_messages()
@@ -69,16 +69,17 @@ class DocumentsViewSet(viewsets.ModelViewSet):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-class DocumentsVersionList(generics.ListCreateAPIView):
+class DocumentsVersionViewSet(viewsets.ModelViewSet):
     """
     Endpoint Document Version
     """
     queryset = DocumentVersion.objects.all()
-    serializer_class = DocumentVersionSerializer
-    permission_classes = [IsOperatorSamePublicAuthority]
+    serializer_class = DocumentVersionSerializerReadOnly
+    permission_classes = [DocumentVersionPermission]
 
     def perform_create(self, serializer):
-        serializer.save(document_id=self.kwargs['document_id'])
+        serializer.save(document=Document.objects.get(id=self.kwargs['document_id']),
+                        author=PaOperator.objects.get(id=self.request.user.id))
 
     def get_queryset(self):
         """
@@ -87,21 +88,14 @@ class DocumentsVersionList(generics.ListCreateAPIView):
         """
         return document_version_queryset(self)
 
-
-class DocumentVersionDetail(generics.RetrieveAPIView):
-    """
-    Endpoint for the single document version page
-    """
-    queryset = DocumentVersion.objects.all()
-    serializer_class = DocumentVersionSerializer
-    permission_classes = [permissions.AllowAny]
-
-    def get_queryset(self):
+    def get_serializer_class(self):
         """
-        Get the version associated to the given document
-        :return:
+        Get different serializer for post request
+        :return: the serializer
         """
-        return document_version_queryset(self)
+        if self.request.method == 'POST':
+            return DocumentVersionSerializer
+        return DocumentVersionSerializerReadOnly
 
 
 # ----------------------------------------------------------------------------------------------------------------------

@@ -10,8 +10,7 @@
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 
-from .views import DocumentsViewSet, PermissionViewSet, FavoriteViewSet, DocumentsVersionList, \
-    DocumentVersionDetail
+from .views import DocumentsViewSet, PermissionViewSet, FavoriteViewSet, DocumentsVersionViewSet
 
 urlpatterns = [
     # ------------------------------------------------------------------------------------------------------------------
@@ -22,8 +21,8 @@ urlpatterns = [
     # ------------------------------------------------------------------------------------------------------------------
     #   Document Versions Views
     # ------------------------------------------------------------------------------------------------------------------
-    path('api/v1/documents/<document_id>/versions/', DocumentsVersionList.as_view()),
-    path('api/v1/documents/<document_id>/versions/<int:pk>', DocumentVersionDetail.as_view()),
+    path('api/v1/document/<document_id>/versions/', DocumentsVersionViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('api/v1/document/<document_id>/versions/<int:pk>', DocumentsVersionViewSet.as_view({'get': 'retrieve'})),
     # ------------------------------------------------------------------------------------------------------------------
     #   Document Permissions Views
     # ------------------------------------------------------------------------------------------------------------------

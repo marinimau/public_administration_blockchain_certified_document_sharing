@@ -10,7 +10,6 @@
 from rest_framework import serializers
 
 from user.serializers import PaOperatorSerializer, CitizenSerializer
-from . import validators
 from contents.messages.get_messages import get_generic_messages, get_document_messages
 from .models import Document, Permission, Favorite, DocumentVersion
 from .querysets import document_queryset
@@ -51,41 +50,29 @@ class DocumentSerializerReadOnly(DocumentSerializer):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-class DocumentVersionSerializer(serializers.Serializer):
+class DocumentVersionSerializer(serializers.ModelSerializer):
     """
     Document Version serializer
     this is the serializer of the DocumentVersion model
     """
 
-    def update(self, instance, validated_data):
-        """
-        Update serializer (not permitted)
-        :param instance: the instance to update
-        :param validated_data: the validate data
-        :return: always an error message, it's impossible to update this model
-        """
-        error = {'message': generic_messages['update_not_allowed_error']}
-        raise serializers.ValidationError(error)
+    class Meta:
+        model = DocumentVersion
+        fields = '__all__'
+        read_only_fields = ['id', 'document', 'author', 'creation_timestamp']
 
-    def create(self, validated_data):
-        """
-        Creation serializer
-        :param validated_data: the validated data
-        :return: The created instance and 201 response or raise a serialization error
-        """
-        resource = validated_data.pop('resource')
-        author = validators.validate_author(context=self.context)
-        queryset = Document.objects.filter(author__public_authority=author.public_authority)
-        document_id = validated_data.pop('document_id')
-        document = validators.validate_document(document_id=document_id, queryset=queryset)
-        return DocumentVersion.create_version(author=author, document=document, file_resource=resource)
+    def validate_document(self, value):
+        if document_queryset(self.context['request']).filter(id=value.id).exists():
+            raise serializers.ValidationError(document_messages['document_does_not_exists'])
+        return value
 
-    id = serializers.ReadOnlyField()
-    author = serializers.ReadOnlyField(source='author.username')
-    creation_timestamp = serializers.DateTimeField(read_only=True, required=False)
-    resource = serializers.FileField(write_only=True, use_url=True, required=True)  # write only
-    file_resource = serializers.URLField(read_only=True)  # read only
-    document = serializers.ReadOnlyField(source='document.id')
+
+class DocumentVersionSerializerReadOnly(DocumentVersionSerializer):
+    """
+    Document version serializer for read request
+    this serializer print author data instead pk
+    """
+    author = PaOperatorSerializer()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -114,7 +101,7 @@ class PermissionSerializer(serializers.ModelSerializer):
 class PermissionSerializerReadOnly(PermissionSerializer):
     """
     Permission serializer for read request
-    this is the serializer print citizen data instead pk
+    this serializer print citizen data instead pk
     """
     citizen = CitizenSerializer()
 

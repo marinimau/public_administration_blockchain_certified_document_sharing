@@ -54,7 +54,7 @@ def document_version_queryset(caller):
     :return:
     """
     document_id = caller.kwargs['document_id']
-    doc_queryset = document_queryset(caller)
+    doc_queryset = document_queryset(caller.request)
     exists_document = doc_queryset.filter(id=document_id).exists()
     if exists_document:
         document = doc_queryset.get(id=document_id)
