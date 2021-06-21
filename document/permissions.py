@@ -11,12 +11,11 @@ from rest_framework import permissions
 from rest_framework.permissions import SAFE_METHODS
 
 from user.models import PaOperator, Citizen
-from .models import Permission, Document
 
 
 class IsPaOperator(permissions.BasePermission):
     """
-    Custom permission: return true if is a PA operator
+    Custom permission: return true if PA operator
     """
 
     def has_permission(self, request, view):
@@ -25,7 +24,7 @@ class IsPaOperator(permissions.BasePermission):
 
 class IsCitizen(permissions.BasePermission):
     """
-    Custom permission: return true if is a Citizen
+    Custom permission: return true if Citizen
     """
 
     def has_permission(self, request, view):

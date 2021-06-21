@@ -5,3 +5,4 @@
 *.sqlite3
 /user/migrations/
 /document/migrations/
+/media/

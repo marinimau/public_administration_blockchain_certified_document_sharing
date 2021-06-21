@@ -6,6 +6,7 @@
 #   Repository: https://github.com/marinimau/public_administration_blockchain_certified_document_sharing
 #   Credits: @marinimau (https://github.com/marinimau)
 #
+
 from rest_framework import serializers
 
 from . import validators
@@ -180,8 +181,8 @@ class FavoriteSerializer(serializers.Serializer):
         citizen = validators.validate_citizen_from_request(self.context)
         document = validators.validate_document(validated_data.pop('document_id'))
         if (Permission.check_permissions(citizen=citizen,
-                                         document=document) or not document.require_permission) and not Favorite.is_favorite(
-                citizen=citizen, document=document):
+                                         document=document) or not document.require_permission) and \
+                not Favorite.is_favorite(citizen=citizen, document=document):
             return Favorite.add_to_favorite(citizen=citizen, document=document)
         else:
             error = {'message': document_messages['favorite_add_error']}

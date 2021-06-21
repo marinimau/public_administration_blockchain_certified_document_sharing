@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'qr_code',
     'user',
     'document',
+    'transaction',
 ]
 
 MIDDLEWARE = [
