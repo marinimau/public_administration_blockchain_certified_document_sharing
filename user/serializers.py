@@ -9,7 +9,7 @@
 
 from rest_framework import serializers
 
-from user.models import PaOperator
+from user.models import PaOperator, Citizen
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -20,11 +20,30 @@ from user.models import PaOperator
 
 class PaOperatorSerializer(serializers.ModelSerializer):
     """
-    Permission serializer
-    this is the serializer of the Permission model
+    PaOperator serializer
+    this is the serializer of the PaOperator model
     """
 
     class Meta:
         model = PaOperator
         fields = ['operator_code', 'username', 'bc_address', 'public_authority']
         read_only_fields = ['operator_code', 'username', 'bc_address', 'public_authority']
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Citizen Serializer
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
+class CitizenSerializer(serializers.ModelSerializer):
+    """
+    Citizen serializer
+    this is the serializer of the Citizen model
+    """
+
+    class Meta:
+        model = Citizen
+        fields = ['id', 'cf']
+        read_only_fields = ['id', 'cf']
+

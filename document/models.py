@@ -195,29 +195,6 @@ class Permission(models.Model):
         unique_together = (('citizen', 'document'),)
 
     @staticmethod
-    def add_permissions(citizen, document):
-        """
-        Add view permissions given a citizen and a document
-        :param citizen: the citizen who want to grant permissions
-        :param document: the document object of permissions
-        :return:
-        """
-        return Permission.objects.create(citizen=citizen, document=document)
-
-    @staticmethod
-    def remove_permissions(citizen, document):
-        """
-        Remove view permissions given a citizen and a document
-        :param citizen: the citizen who want to remove permissions
-        :param document: the document object of permissions
-        :return:
-        """
-        queryset = Permission.objects.filter(citizen=citizen, document=document)
-        if queryset.exists():
-            queryset.delete()
-        return
-
-    @staticmethod
     def check_permissions(citizen, document):
         """
         Check view permissions given a citizen and a document
@@ -246,29 +223,6 @@ class Favorite(models.Model):
 
     class Meta:
         unique_together = (('citizen', 'document'),)
-
-    @staticmethod
-    def add_to_favorite(citizen, document):
-        """
-        Add to Favorite a document
-        :param citizen: the citizen who want to add the document to favorites
-        :param document: the document to add
-        :return: The created Favorite instance
-        """
-        return Favorite.objects.create(citizen=citizen, document=document)
-
-    @staticmethod
-    def remove_from_favorites(citizen, document):
-        """
-        Remove document from favorites
-        :param citizen: the citizen who want to remove document from favorites
-        :param document: the document
-        :return:
-        """
-        queryset = Favorite.objects.filter(citizen=citizen, document=document)
-        if queryset.exists():
-            queryset.delete()
-        return
 
     @staticmethod
     def is_favorite(citizen, document):

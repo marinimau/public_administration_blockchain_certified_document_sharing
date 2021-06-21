@@ -60,3 +60,38 @@ def document_version_queryset(caller):
         document = doc_queryset.get(id=document_id)
         return DocumentVersion.objects.filter(document=document)
     return DocumentVersion.objects.none()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Permission
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
+def permission_all_queryset(caller):
+    """
+    Get the permissions associated to document of the same public authority of the operator
+    :return:
+    """
+    operator = PaOperator.objects.get(username=caller.request.user.username)
+    return Permission.objects.filter(document__author__public_authority=operator.public_authority)
+
+
+def permission_by_document_queryset(caller):
+    """
+    Get the permissions associated to the given document (only operator PA's document)
+    :return:
+    """
+    public_authority_documents_permissions = permission_all_queryset(caller=caller)
+    document_id = caller.kwargs['document_id']
+    return public_authority_documents_permissions.filter(document__id=document_id)
+
+
+def permission_by_citizen_queryset(caller):
+    """
+    Get the permissions associated to the given user (only operator PA's document)
+    :return:
+    """
+    public_authority_documents_permissions = permission_all_queryset(caller=caller)
+    cf = str.lower(caller.kwargs['cf'])
+    return public_authority_documents_permissions.filter(citizen__cf=cf)

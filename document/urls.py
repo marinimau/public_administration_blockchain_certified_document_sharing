@@ -10,8 +10,7 @@
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 
-from .views import DocumentsViewSet, PermissionListDocument, PermissionListUser, \
-    PermissionCreation, PermissionDetail, FavoriteOfCitizenList, FavoriteDetail, DocumentsVersionList, \
+from .views import DocumentsViewSet, PermissionViewSet, FavoriteViewSet, DocumentsVersionList, \
     DocumentVersionDetail
 
 urlpatterns = [
@@ -28,15 +27,13 @@ urlpatterns = [
     # ------------------------------------------------------------------------------------------------------------------
     #   Document Permissions Views
     # ------------------------------------------------------------------------------------------------------------------
-    path('api/v1/document/<document_id>/view_permissions/', PermissionListDocument.as_view()),
-    path('api/v1/citizen/<cf>/view_permissions/', PermissionListUser.as_view()),
-    path('api/v1/create_permission/', PermissionCreation.as_view()),
-    path('api/v1/permission_detail/<int:pk>', PermissionDetail.as_view()),
+    path('api/v1/permission/', PermissionViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('api/v1/permission/<int:pk>', PermissionViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
     # ------------------------------------------------------------------------------------------------------------------
     #   Favorite document Views
     # ------------------------------------------------------------------------------------------------------------------
-    path('api/v1/my_favorites/', FavoriteOfCitizenList.as_view()),
-    path('api/v1/my_favorites/<int:pk>', FavoriteDetail.as_view()),
+    path('api/v1/my_favorites/', FavoriteViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('api/v1/my_favorites/<int:pk>', FavoriteViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

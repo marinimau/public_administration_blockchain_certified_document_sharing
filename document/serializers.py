@@ -9,7 +9,7 @@
 
 from rest_framework import serializers
 
-from user.serializers import PaOperatorSerializer
+from user.serializers import PaOperatorSerializer, CitizenSerializer
 from . import validators
 from contents.messages.get_messages import get_generic_messages, get_document_messages
 from .models import Document, Permission, Favorite, DocumentVersion
@@ -102,7 +102,15 @@ class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
         fields = '__all__'
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'document', 'citizen']
+
+
+class PermissionSerializerReadOnly(PermissionSerializer):
+    """
+    Permission serializer for read request
+    this is the serializer print citizen data instead pk
+    """
+    citizen = CitizenSerializer()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -111,45 +119,7 @@ class PermissionSerializer(serializers.ModelSerializer):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-class FavoriteSerializer(serializers.Serializer):
-    """
-    Favorite serializer
-    this is the serializer of the Permission model
-    """
-
-    def update(self, instance, validated_data):
-        """
-        Update serializer (not permitted)
-        :param instance: the document instance to update
-        :param validated_data: the validate data
-        :return: always an error message, it's impossible to update this model
-        """
-        error = {'message': generic_messages['update_not_allowed_error']}
-        raise serializers.ValidationError(error)
-
-    def create(self, validated_data):
-        """
-        Creation serializer
-        :param validated_data: the validated data
-        :return: The created instance and 201 response or raise a serialization error
-        """
-        citizen = validators.validate_citizen_from_request(self.context)
-        document = validators.validate_document(validated_data.pop('document_id'))
-        if (Permission.check_permissions(citizen=citizen,
-                                         document=document) or not document.require_permission) and \
-                not Favorite.is_favorite(citizen=citizen, document=document):
-            return Favorite.add_to_favorite(citizen=citizen, document=document)
-        else:
-            error = {'message': document_messages['favorite_add_error']}
-            raise serializers.ValidationError(error)
-
-    id = serializers.ReadOnlyField()
-    document_id = serializers.IntegerField(required=True, write_only=True)
-    citizen = serializers.ReadOnlyField(source='citizen.cf')
-    document = DocumentSerializer(read_only=True)
-
-
-class FavoriteSerializer2(serializers.ModelSerializer):
+class FavoriteSerializer(serializers.ModelSerializer):
     """
     Favorite serializer
     this is the serializer of the Favorite model
@@ -158,7 +128,12 @@ class FavoriteSerializer2(serializers.ModelSerializer):
     class Meta:
         model = Favorite
         fields = ['id', 'citizen', 'document']
-        read_only_fields = ['id', 'document']
+        read_only_fields = ['id', 'citizen', 'document']
 
-    document = DocumentSerializer(read_only=True)
 
+class FavoriteSerializerReadOnly(FavoriteSerializer):
+    """
+    Favorite serializer for read request
+    shows document data instead pk
+    """
+    document = DocumentSerializer()
