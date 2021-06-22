@@ -16,7 +16,7 @@ from django.db import models
 #   Abstract Transaction
 #
 # ----------------------------------------------------------------------------------------------------------------------
-from document.models import Document, DocumentVersion
+from api.document.models import Document, DocumentVersion
 
 
 class AbstractTransaction(models.Model):

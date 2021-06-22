@@ -33,7 +33,7 @@ urlpatterns = [
     # ------------------------------------------------------------------------------------------------------------------
     #   document urls
     # ------------------------------------------------------------------------------------------------------------------
-    path('', include('document.urls'))
+    path('', include('api.document.urls'))
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

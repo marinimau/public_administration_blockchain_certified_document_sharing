@@ -9,7 +9,7 @@
 
 from rest_framework import serializers
 
-from user.models import PaOperator, Citizen
+from api.user.models import PaOperator, Citizen
 
 
 # ----------------------------------------------------------------------------------------------------------------------

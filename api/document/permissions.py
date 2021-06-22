@@ -10,8 +10,8 @@
 from rest_framework import permissions
 from rest_framework.permissions import SAFE_METHODS
 
-from document.models import Document
-from user.models import PaOperator, Citizen
+from .models import Document
+from api.user.models import PaOperator, Citizen
 
 
 # ----------------------------------------------------------------------------------------------------------------------

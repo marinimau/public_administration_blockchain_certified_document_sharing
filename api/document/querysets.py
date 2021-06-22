@@ -9,8 +9,8 @@
 
 from django.db.models import Q
 
-from document.models import Document, Permission, DocumentVersion
-from user.models import PaOperator, Citizen
+from .models import Document, Permission, DocumentVersion
+from api.user.models import PaOperator, Citizen
 
 
 # ----------------------------------------------------------------------------------------------------------------------

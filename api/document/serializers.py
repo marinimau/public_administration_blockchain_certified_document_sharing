@@ -9,7 +9,7 @@
 
 from rest_framework import serializers
 
-from user.serializers import PaOperatorSerializer, CitizenSerializer
+from api.user.serializers import PaOperatorSerializer, CitizenSerializer
 from contents.messages.get_messages import get_generic_messages, get_document_messages
 from .models import Document, Permission, Favorite, DocumentVersion
 from .querysets import document_queryset

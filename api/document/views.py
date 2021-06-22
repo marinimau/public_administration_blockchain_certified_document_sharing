@@ -12,7 +12,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND
 
-from user.models import Citizen, PaOperator
+from api.user.models import Citizen, PaOperator
 from .models import Document, Permission, Favorite, DocumentVersion
 from .permissions import IsPaOperator, IsCitizen, DocumentPermissions, DocumentVersionPermission
 from .querysets import document_queryset, document_version_queryset, permission_all_queryset
@@ -51,7 +51,7 @@ class DocumentsViewSet(viewsets.ModelViewSet):
         Get only documents of the same public authority
         :return:
         """
-        return document_queryset(self.request)
+        return document_queryset(self.request).order_by('id')
 
     def get_serializer_class(self):
         """
@@ -86,7 +86,7 @@ class DocumentsVersionViewSet(viewsets.ModelViewSet):
         Get the version associated to the given document
         :return:
         """
-        return document_version_queryset(self)
+        return document_version_queryset(self).order_by('id')
 
     def get_serializer_class(self):
         """
@@ -120,11 +120,11 @@ class PermissionViewSet(viewsets.ModelViewSet):
         queryset = permission_all_queryset(self)
         citizen = self.request.query_params.get('citizen')
         document = self.request.query_params.get('document')
-        if document is not None:
+        if document is not None and document.isnumeric():
             queryset = queryset.filter(document__id=document)
-        if citizen is not None:
+        if citizen is not None and citizen.isnumeric():
             queryset = queryset.filter(citizen__cf=citizen)
-        return queryset
+        return queryset.order_by('id')
 
     def get_serializer_class(self):
         """
@@ -167,9 +167,9 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         username = self.request.user.username
         queryset = Favorite.objects.filter(citizen__username=username)
         document = self.request.query_params.get('document')
-        if document is not None:
+        if document is not None and document.isnumeric():
             queryset = queryset.filter(document__id=document)
-        return queryset
+        return queryset.order_by('id')
 
     def get_serializer_class(self):
         """

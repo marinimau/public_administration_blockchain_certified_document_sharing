@@ -59,9 +59,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'gnosis',
     'qr_code',
-    'user',
-    'document',
-    'transaction',
+    'api.user',
+    'api.document',
+    'api.transaction',
 ]
 
 MIDDLEWARE = [

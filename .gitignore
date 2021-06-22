@@ -3,6 +3,7 @@
 /.idea/
 *.sqlite
 *.sqlite3
-/user/migrations/
-/document/migrations/
+/api/user/migrations/
+/api/document/migrations/
+/api/transaction/migrations/
 /media/
