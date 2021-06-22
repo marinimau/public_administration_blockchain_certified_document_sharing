@@ -6,4 +6,5 @@
 /api/user/migrations/
 /api/document/migrations/
 /api/transaction/migrations/
+/frontend/migrations/
 /media/
