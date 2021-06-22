@@ -103,7 +103,7 @@
         </div>
         <nav>
             <ul class="Linklist Linklist--padded Treeview Treeview--default js-Treeview u-text-r-xs">
-                <li><a href="#">Lista documenti</a></li>
+                <li><a href="{% url 'document-list' %}">Lista documenti</a></li>
                 {% if user.is_authenticated %}
                     <li><a href="#">Preferiti</a></li>
                 {% endif %}

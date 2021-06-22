@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+
+{% block site %}
+    <div class="u-layout-centerContent u-cf " style="margin-top: 20px">
+        {% if len_documents == 0 %}
+            <p class="u-textSecondary u-lineHeight-l">
+                Nessun documento disponibile
+            </p>
+        {% else %}
+
+            <section class="js-Masonry-container u-layout-medium" data-columns>
+                {% for d in documents %}
+                    <form method='POST' name="document-versions{{ d.id }}"
+                          action="{% url 'document-versions' %}">
+                        <div class="Masonry-item js-Masonry-item" onclick="document.forms['document-versions{{ d.id }}'].submit();" style="cursor: pointer">
+                            <div class="u-nbfc u-borderShadow-xxs u-borderRadius-m u-color-grey-30 u-background-white">
+                                <div class="u-text-r-l u-padding-r-all u-layout-prose">
+                                    <p class="u-text-h6 u-margin-bottom-l u-color-50">
+                                        {{ d.author.public_authority.name }}
+                                    </p>
+                                    <h3 class="u-text-h4 u-margin-r-bottom u-text-r-m u-color-black">
+                                        {{ d.title }}
+                                    </h3>
+                                    <p class="u-text-p u-textSecondary">{{ d.description }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="document_id" value="{{ d.id }}">
+                        {% csrf_token %}
+                    </form>
+                {% endfor %}
+
+            </section>
+
+        {% endif %}
+
+    </div>
+
+
+{% endblock site %}

@@ -10,10 +10,33 @@
 from django.shortcuts import render
 from rest_framework.status import HTTP_404_NOT_FOUND
 
+from api.document.querysets import document_queryset
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-#   Favorite
+#   Document
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
+def document_list_view(request):
+    document_list = document_queryset(request)
+    return render(request, 'document_list_page.html', {'documents': document_list, 'len_documents': len(document_list)})
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Document
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
+def document_versions_list_view(request):
+    return render(request, 'document_version_detail_page.html')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Error 404
 #
 # ----------------------------------------------------------------------------------------------------------------------
 

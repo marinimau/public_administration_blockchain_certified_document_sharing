@@ -86,7 +86,7 @@ class DocumentsVersionViewSet(viewsets.ModelViewSet):
         Get the version associated to the given document
         :return:
         """
-        return document_version_queryset(self).order_by('id')
+        return document_version_queryset(self).order_by('-creation_timestamp')
 
     def get_serializer_class(self):
         """
