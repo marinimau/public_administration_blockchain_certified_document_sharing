@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+ {% block site %}
+    <div class="Grid">
+        <div class="Grid-cell Grid-cell--center u-size10of12 u-sm-size8of12 u-md-size5of12 u-lg-size4of12">
+            <div class="ErrorPage u-textCenter u-text-xxs u-text-md-xs u-text-lg-s">
+                <h1 class="ErrorPage-title">{% block error_code %}{% endblock error_code %}</h1>
+                <h2 class="ErrorPage-subtitle">{% block error_name %}{% endblock error_name %}</h2>
+                <p class="Prose u-margin-r-all">{% block error_description %}{% endblock error_description %}<br>Se ritieni di visualizzare questo messaggio per via di un errore del sito puoi
+                    <a href="#" title="Torna alla pagina precedente">inviare una segnalazione</a>
+
+                </p>
+                <a class="Button Button--default u-margin-r-all" href="javascript:history.back();">Torna indietro</a>
+            </div>
+
+        </div>
+    </div>
+ {% endblock site %}

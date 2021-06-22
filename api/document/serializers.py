@@ -73,6 +73,7 @@ class DocumentVersionSerializerReadOnly(DocumentVersionSerializer):
     this serializer print author data instead pk
     """
     author = PaOperatorSerializer()
+    document = DocumentSerializerReadOnly()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

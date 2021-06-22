@@ -16,23 +16,23 @@ urlpatterns = [
     # ------------------------------------------------------------------------------------------------------------------
     #   Document Views
     # ------------------------------------------------------------------------------------------------------------------
-    path('api/v1/document/', DocumentsViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('api/v1/document/<int:pk>', DocumentsViewSet.as_view({'get': 'retrieve', 'put': 'partial_update'})),
+    path('document/', DocumentsViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('document/<int:pk>', DocumentsViewSet.as_view({'get': 'retrieve', 'put': 'partial_update'})),
     # ------------------------------------------------------------------------------------------------------------------
     #   Document Versions Views
     # ------------------------------------------------------------------------------------------------------------------
-    path('api/v1/document/<document_id>/versions/', DocumentsVersionViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('api/v1/document/<document_id>/versions/<int:pk>', DocumentsVersionViewSet.as_view({'get': 'retrieve'})),
+    path('document/<document_id>/versions/', DocumentsVersionViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('document/<document_id>/versions/<int:pk>', DocumentsVersionViewSet.as_view({'get': 'retrieve'})),
     # ------------------------------------------------------------------------------------------------------------------
     #   Document Permissions Views
     # ------------------------------------------------------------------------------------------------------------------
-    path('api/v1/permission/', PermissionViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('api/v1/permission/<int:pk>', PermissionViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+    path('permission/', PermissionViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('permission/<int:pk>', PermissionViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
     # ------------------------------------------------------------------------------------------------------------------
     #   Favorite document Views
     # ------------------------------------------------------------------------------------------------------------------
-    path('api/v1/my_favorites/', FavoriteViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('api/v1/my_favorites/<int:pk>', FavoriteViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+    path('my_favorites/', FavoriteViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('my_favorites/<int:pk>', FavoriteViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -8,5 +8,19 @@
 #
 
 from django.shortcuts import render
+from rest_framework.status import HTTP_404_NOT_FOUND
 
-# Create your views here.
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Favorite
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
+def error_404(request):
+    """
+    A custom 404 error page for the documents
+    :param request: the request
+    :return: the render of the 404 error page
+    """
+    return render(request, '404.html', {}, status=HTTP_404_NOT_FOUND)
