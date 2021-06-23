@@ -10,7 +10,7 @@
 from django.shortcuts import render
 from rest_framework.status import HTTP_404_NOT_FOUND
 
-from api.document.models import DocumentVersion
+from api.document.models import DocumentVersion, Favorite
 from api.document.querysets import document_queryset
 
 
@@ -21,8 +21,8 @@ from api.document.querysets import document_queryset
 # ----------------------------------------------------------------------------------------------------------------------
 
 def document_list_view(request):
-    document_list = document_queryset(request) # api.document.queryset is permission filtered
-    return render(request, 'document_list_page.html', {'documents': document_list, 'len_documents': len(document_list)})
+    document_list = document_queryset(request)  # api.document.queryset is permission filtered
+    return render(request, 'document_list_page.html', {'documents': document_list})
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -60,6 +60,20 @@ def document_version_detail_view(request):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
+#   Favorites
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
+def favorites_list_view(request):
+    if request.user is not None:
+        favorites = Favorite.objects.filter(citizen__username=request.user.username)
+        document_list = document_queryset(request).filter(id__in=[f.document.id for f in favorites])
+        return render(request, 'document_list_page.html', {'documents': document_list})
+    return error_404(request)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
 #   Error 404
 #
 # ----------------------------------------------------------------------------------------------------------------------
@@ -71,3 +85,4 @@ def error_404(request):
     :return: the render of the 404 error page
     """
     return render(request, '404.html', {}, status=HTTP_404_NOT_FOUND)
+

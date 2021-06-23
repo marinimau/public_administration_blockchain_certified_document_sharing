@@ -3,17 +3,17 @@
 
 {% block site %}
     <div class="u-layout-centerContent u-cf " style="margin-top: 20px">
-        {% if len_documents == 0 %}
-            <p class="u-textSecondary u-lineHeight-l">
-                Nessun documento disponibile
-            </p>
-        {% else %}
-
-            <section class="js-Masonry-container u-layout-medium" data-columns>
+        <section class="js-Masonry-container u-layout-medium" data-columns>
+            {% if not documents %}
+                <p class="u-text-p u-textSecondary">
+                    Nessun documento
+                </p>
+            {% else %}
                 {% for d in documents %}
                     <form method='POST' name="document-versions{{ d.id }}"
                           action="{% url 'document-versions' %}">
-                        <div class="Masonry-item js-Masonry-item" onclick="document.forms['document-versions{{ d.id }}'].submit();" style="cursor: pointer">
+                        <div class="Masonry-item js-Masonry-item"
+                             onclick="document.forms['document-versions{{ d.id }}'].submit();" style="cursor: pointer">
                             <div class="u-nbfc u-borderShadow-xxs u-borderRadius-m u-color-grey-30 u-background-white">
                                 <div class="u-text-r-l u-padding-r-all u-layout-prose">
                                     <p class="u-text-h6 u-margin-bottom-l u-color-50">
@@ -31,9 +31,9 @@
                     </form>
                 {% endfor %}
 
-            </section>
+                </section>
 
-        {% endif %}
+            {% endif %}
 
     </div>
 

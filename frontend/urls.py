@@ -20,6 +20,7 @@ urlpatterns = [
     path('', views.document_list_view, name='document-list'),
     path('document_detail/', views.document_versions_list_view, name='document-versions'),
     path('document_version_detail/', views.document_version_detail_view, name='version-detail'),
+    path('saved/', views.favorites_list_view, name='document-saved'),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='logout.html'), name='logout'),
 

@@ -11,12 +11,14 @@
                             <strong class=" u-text-r-xs">{{ document.author.username }}</strong>
                         </p>
                         <p class="Grid-cell u-textSecondary">
-                            {{ document.author.bc_address }}
+                            {{ document.author.public_authority.name }}
                         </p>
                     </div>
                     <div class="u-text-r-l u-layout-prose">
                         <h2 class="u-text-h2 u-margin-r-bottom">{{ document.title }}</h2>
-                        <p class="u-textSecondary u-lineHeight-l">{{ document.description }}</p>
+                        <article class="Prose u-layout-prose">
+                            <p>{{ document.description }} </p>
+                        </article>
                     </div>
                     <div class="u-sizeFull u-text-r-s u-color-70 u-margin-top-xxl">
                         <h3 class="u-border-bottom-m u-text-h3 u-color-60">Elenco versioni:</h3>
@@ -24,9 +26,8 @@
                             <ul class="Linklist Prose u-text-r-xs">
                                 {% for v in versions %}
                                     <form method='POST' name="version{{ v.id }}" action="{% url 'version-detail' %}">
-                                        <li>
-                                            <a onclick="document.forms['version{{ v.id }}'].submit();">{{ v.creation_timestamp }}</a>
-                                        </li>
+                                        <li onclick="document.forms['version{{ v.id }}'].submit();"
+                                            style="cursor: pointer"><a>{{ v.creation_timestamp }}</a></li>
                                         <input type="hidden" name="version_id" value="{{ v.id }}">
                                         {% csrf_token %}
                                     </form>
@@ -36,6 +37,10 @@
                             <p class="u-textSecondary u-lineHeight-l">Nessuna versione</p>
                         {% endif %}
                     </div>
+                </div>
+
+                <div class="Grid-cell u-sizeFull u-md-size1of2 u-lg-size1of2 u-text-r-s u-padding-r-all">
+
                 </div>
             </section>
         </div>
