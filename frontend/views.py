@@ -27,12 +27,11 @@ def document_list_view(request):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-#   Document
+#   Document Versions
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-def document_versions_list_view(request):
-    document_id = request.POST.get("document_id")
+def document_versions_list_view(request, document_id):
     queryset = document_queryset(request)  # api.document.queryset is permission filtered
     exists = queryset.filter(id=document_id).exists()
     if exists:
@@ -42,19 +41,15 @@ def document_versions_list_view(request):
     return error_404(request)
 
 
-# ----------------------------------------------------------------------------------------------------------------------
-#
-#   Versions
-#
-# ----------------------------------------------------------------------------------------------------------------------
-
-def document_version_detail_view(request):
-    # document_id = request.POST.get("document_id")
+def document_version_detail_view(request, version_id):
     queryset = document_queryset(request)  # api.document.queryset is permission filtered
-    exists = True
+    exists = DocumentVersion.objects.filter(id=version_id).exists()
     if exists:
-        version = 0
-        return render(request, 'document_version_detail_page.html', {'version': version})
+        version = DocumentVersion.objects.get(id=version_id)
+        if queryset.filter(id=version.document.id).exists():  # security check
+            is_last = version == \
+                      DocumentVersion.objects.filter(document=version.document).order_by('-creation_timestamp')[0]
+            return render(request, 'document_version_detail_page.html', {'version': version, 'is_last': is_last})
     return error_404(request)
 
 
@@ -85,4 +80,3 @@ def error_404(request):
     :return: the render of the 404 error page
     """
     return render(request, '404.html', {}, status=HTTP_404_NOT_FOUND)
-

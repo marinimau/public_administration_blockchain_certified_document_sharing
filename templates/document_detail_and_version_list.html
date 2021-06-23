@@ -25,12 +25,7 @@
                         {% if versions %}
                             <ul class="Linklist Prose u-text-r-xs">
                                 {% for v in versions %}
-                                    <form method='POST' name="version{{ v.id }}" action="{% url 'version-detail' %}">
-                                        <li onclick="document.forms['version{{ v.id }}'].submit();"
-                                            style="cursor: pointer"><a>{{ v.creation_timestamp }}</a></li>
-                                        <input type="hidden" name="version_id" value="{{ v.id }}">
-                                        {% csrf_token %}
-                                    </form>
+                                    <li><a href="{% url 'version-detail' v.id %}">{{ v.creation_timestamp }}</a></li>
                                 {% endfor %}
                             </ul>
                         {% else %}

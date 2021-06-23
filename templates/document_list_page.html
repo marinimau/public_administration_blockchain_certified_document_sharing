@@ -11,7 +11,7 @@
             {% else %}
                 {% for d in documents %}
                     <form method='POST' name="document-versions{{ d.id }}"
-                          action="{% url 'document-versions' %}">
+                          action="{% url 'document-versions' d.id %}">
                         <div class="Masonry-item js-Masonry-item"
                              onclick="document.forms['document-versions{{ d.id }}'].submit();" style="cursor: pointer">
                             <div class="u-nbfc u-borderShadow-xxs u-borderRadius-m u-color-grey-30 u-background-white">
