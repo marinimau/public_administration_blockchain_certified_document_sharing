@@ -28,10 +28,10 @@
                         </p>
                     </div>
                     <div class="u-text-r-l u-layout-prose">
-                        <h2 class="u-text-h2 u-margin-r-bottom">{{ version.document.title }}</h2>
+                        <a href="{% url 'document-versions' version.document.id %}" class="u-text-h2 u-textClean u-color-black">{{ version.document.title }}</a>
                         <!-- check if there is a new version of this document -->
                         {% if not is_last %}
-                            <div class="Prose Alert Alert--info Alert--withIcon u-layout-prose u-padding-r-bottom u-padding-r-right u-margin-r-bottom"
+                            <div class="Prose Alert Alert--info Alert--withIcon u-layout-prose u-padding-r-bottom u-padding-r-right u-margin-top-l"
                                  role="alert">
                                 <p class="u-text-p">Esiste una nuova versione di questo documento.
                                     <a href="{% url 'document-versions' version.document.id  %}">
@@ -40,7 +40,7 @@
 
                             </div>
                         {% endif %}
-                        <article class="Prose u-layout-prose">
+                        <article class="Prose u-layout-prose u-margin-top-l">
                             <p>{{ version.document.description }} </p>
                         </article>
                     </div>
