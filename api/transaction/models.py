@@ -53,6 +53,8 @@ class DocumentTransaction(AbstractTransaction):
     This class represent the model of transaction for Document model
     """
     document = models.OneToOneField(Document, on_delete=models.RESTRICT)
+    signature_secret_key = models.CharField(null=False, max_length=256, default='secret_key')
+    signature_public_key = models.CharField(null=False, max_length=256, default='public_key')
 
     @staticmethod
     def create_document_transaction(document, operator):

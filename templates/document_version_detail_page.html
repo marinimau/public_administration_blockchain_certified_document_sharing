@@ -21,27 +21,27 @@
                     <div class="Grid Grid--fit u-margin-r-bottom">
                         <p class="Grid-cell">
                             <span class="Dot u-background-50"></span>
-                            <strong class=" u-text-r-xs">{{ document.author.username }}</strong>
+                            <strong class=" u-text-r-xs">{{ version.document.author.username }}</strong>
                         </p>
                         <p class="Grid-cell u-textSecondary">
-                            {{ document.author.public_authority.name }}
+                            {{ version.document.author.public_authority.name }}
                         </p>
                     </div>
                     <div class="u-text-r-l u-layout-prose">
-                        <h2 class="u-text-h2 u-margin-r-bottom">{{ document.title }}</h2>
+                        <h2 class="u-text-h2 u-margin-r-bottom">{{ version.document.title }}</h2>
                         <!-- check if there is a new version of this document -->
-                        {% if new_version_flag %}
+                        {% if not is_last %}
                             <div class="Prose Alert Alert--info Alert--withIcon u-layout-prose u-padding-r-bottom u-padding-r-right u-margin-r-bottom"
                                  role="alert">
                                 <p class="u-text-p">Esiste una nuova versione di questo documento.
-                                    <a href="{{ request.scheme }}://{{ request.get_host }}/{{ new_version_id }}">
+                                    <a href="{% url 'document-versions' version.document.id  %}">
                                         Vedi versioni documento</a>
                                 </p>
 
                             </div>
                         {% endif %}
                         <article class="Prose u-layout-prose">
-                            <p>{{ document.description }} </p>
+                            <p>{{ version.document.description }} </p>
                         </article>
                     </div>
                 </div>
@@ -69,7 +69,7 @@
                     <div class="Entrypoint-item u-background-50">
                         <p>
                             <a id="download_btn" class="u-textClean u-text-h4 u-color-white"
-                               href="{{ request.scheme }}://{{ request.get_host }}/media/{{ document.metadata.file_resource.name }}"
+                               href="{{ request.scheme }}://{{ request.get_host }}/media/{{ version.file_resouce }}"
                                target="_blank">
                                 Scarica
                             </a>

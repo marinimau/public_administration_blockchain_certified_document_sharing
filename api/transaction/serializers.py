@@ -24,7 +24,10 @@ generic_messages = get_generic_messages()
 class DocumentTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentTransaction
-        fields = '__all__'
+        fields = ['id', 'transaction_address', 'author_address', 'creation_timestamp', 'document',
+                  'signature_public_key']
+        read_only_fields = ['id', 'transaction_address', 'author_address', 'creation_timestamp', 'document',
+                            'signature_public_key']
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -37,5 +40,3 @@ class DocumentVersionTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentVersionTransaction
         fields = '__all__'
-
-
