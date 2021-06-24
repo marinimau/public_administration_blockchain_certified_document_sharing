@@ -6,7 +6,7 @@
 
     <script>
         function autoDownload() {
-            window.open("{{ request.scheme }}://{{ request.get_host }}/media/{{ document.metadata.file_resource.name }}");
+            window.open("{{ request.scheme }}://{{ request.get_host }}/media/{{ file_name }}");
         }
     </script>
 
@@ -69,7 +69,7 @@
                     <div class="Entrypoint-item u-background-50">
                         <p>
                             <a id="download_btn" class="u-textClean u-text-h4 u-color-white"
-                               href="{{ request.scheme }}://{{ request.get_host }}/media/{{ version.file_resouce }}"
+                               href="{{ request.scheme }}://{{ request.get_host }}/media/{{ file_name }}"
                                target="_blank">
                                 Scarica
                             </a>
