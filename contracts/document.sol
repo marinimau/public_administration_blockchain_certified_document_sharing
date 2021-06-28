@@ -6,17 +6,17 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol"; 
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/contracts/ownership/Whitelist.sol"; 
 
 
 /**
  * @title Document
  * @dev Store & retrieve document version
  */
-contract Document {
+contract Document is Whitelist{
 
-    documenr
+    uint256 documentID;
+    string documentURI;
     address documentAuthor;
     
     
@@ -26,7 +26,7 @@ contract Document {
      */
     struct DocumentVersion {
         uint256 versionID;
-        string documentURI;
+        string documentVersionURI;
         sha256 fingerPrint;
         address versionAuthor;
     }
