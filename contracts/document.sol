@@ -6,18 +6,17 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/contracts/ownership/Whitelist.sol"; 
 
 
 /**
  * @title Document
  * @dev Store & retrieve document version
  */
-contract Document is Whitelist{
+contract Document{
 
-    uint256 documentID;
     string documentURI;
     address documentAuthor;
+    mapping(uint256 => DocumentVersion) private versions;
     
     
     /**
@@ -25,36 +24,40 @@ contract Document is Whitelist{
      * @dev Struct for the document version
      */
     struct DocumentVersion {
-        uint256 versionID;
+        uint256 documentVersionID;
         string documentVersionURI;
-        sha256 fingerPrint;
+        bytes32 fingerPrint;
         address versionAuthor;
     }
 
     /**
-     * @dev Store value in variable
-     * @param num value to store
+     * @dev Store create a document
+     * @param _documentURI the URI of the document page in the centralized app
      */
-    function store(uint256 num) public {
-        number = num;
+    function createDocument(string memory _documentURI) public{
+        documentURI = _documentURI;
+        documentAuthor == msg.sender;
     }
 
     /**
      * @dev Return value 
-     * @return value of 'number'
+     * @return value of 'documentID'
      */
-    function retrieve() public view returns (uint256){
-        return number;
+    function retrieveDocument() public view returns (string memory){
+        return documentURI;
+    }
+    
+    /**
+     * 
+     */
+    function createDocumentVersion(uint256 documentVersionID, string memory documentVersionURI, bytes32 fingerPrint) public {
+        versions[documentVersionID] = DocumentVersion(documentVersionID, documentVersionURI, fingerPrint, msg.sender);
     }
     
     
     modifier onlyDocumentAuthor(){
-        require(author==msg.sender);
+        require(documentAuthor==msg.sender);
         _;
     }
     
-    modifier onlyAuthorizedOperator(uint256 id){
-        require(ownerOf(id)==msg.sender);
-        _;
-    }
 }
