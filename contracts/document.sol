@@ -7,16 +7,23 @@
 pragma solidity ^0.8.0;
 
 
+import "@openzeppelin/contracts/access/Ownable.sol"; 
+
 
 /**
  * @title Document
- * @dev Store & retrieve document version
+ * @dev Store & retrieve document version, versions can be created nlòy by white listed operators
  */
-contract Document{
+contract Document is Ownable{
 
     string documentURI;
     address documentAuthor;
     mapping(uint256 => DocumentVersion) public versions;
+    mapping(address => bool) whitelist;
+    
+    
+    event AddedToWhitelist(address indexed account);
+    event RemovedFromWhitelist(address indexed account);
     
     
     /**
@@ -84,8 +91,42 @@ contract Document{
      * @param _documentVersionURI: the URI of the document version in the centralized app
      * @param _fingerPrint: the sha256 fingerPrint of the version attached file.
      */
-    function createDocumentVersion(uint256 _documentVersionID, string memory _documentVersionURI, bytes32 _fingerPrint) public {
+    function createDocumentVersion(uint256 _documentVersionID, string memory _documentVersionURI, bytes32 _fingerPrint) public onlyWhitelisted{
         versions[_documentVersionID] = DocumentVersion(_documentVersionID, _documentVersionURI, _fingerPrint, msg.sender);
+    }
+    
+    
+    /**
+     * --------------------------------------------------------
+     * WhiteList
+     * --------------------------------------------------------
+     */
+    
+    /**
+     * @dev Add an operator to whitelist
+     * @param _address the address of the operator
+     */
+    function addToWhiteList(address _address) public onlyOwner {
+        whitelist[_address] = true;
+        emit AddedToWhitelist(_address);
+    }
+
+     /**
+     * @dev Remove an operator to whitelist
+     * @param _address the address of the operator
+     */
+    function removeFromWhiteList(address _address) public onlyOwner {
+        whitelist[_address] = false;
+        emit RemovedFromWhitelist(_address);
+    }
+
+     /**
+     * @dev Check if an operator is in whitelist
+     * @param _address the address of the operator
+     * @return a flag that indicates if the operator is in the whitelist
+     */
+    function isWhitelisted(address _address) public view returns(bool) {
+        return whitelist[_address];
     }
     
     
@@ -94,10 +135,14 @@ contract Document{
      * Modifiers
      * --------------------------------------------------------
      */
-    
-    modifier onlyDocumentAuthor(){
-        require(documentAuthor==msg.sender);
+
+    /**
+     * requires that the sender is inside the whitelist
+     */
+    modifier onlyWhitelisted() {
+        require(isWhitelisted(msg.sender));
         _;
     }
+
     
 }
