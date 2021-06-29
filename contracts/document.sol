@@ -34,21 +34,32 @@ contract Document{
      * @dev Store create a document
      * @param _documentURI the URI of the document page in the centralized app
      */
-    function createDocument(string memory _documentURI) public{
+    constructor(string memory _documentURI) {
         documentURI = _documentURI;
         documentAuthor == msg.sender;
     }
 
     /**
-     * @dev Return value 
-     * @return value of 'documentID'
+     * @dev Return value of the documentURI
+     * @return value of 'documentURI'
      */
-    function retrieveDocument() public view returns (string memory){
+    function retrieveDocumentURI() public view returns (string memory){
         return documentURI;
     }
     
     /**
-     * 
+     * @dev Return address of the author of the document
+     * @return value of 'documentAuthor'
+     */
+    function retrieveDocumentAuthor() public view returns (address){
+        return documentAuthor;
+    }
+    
+     /**
+     * @dev Create a version for the document
+     * @param documentVersionID: the id of the version
+     * @param documentVersionURI: the URI of the document version in the centralized app
+     * @param fingerPrint: the sha256 fingerPrint of the version attached file.
      */
     function createDocumentVersion(uint256 documentVersionID, string memory documentVersionURI, bytes32 fingerPrint) public {
         versions[documentVersionID] = DocumentVersion(documentVersionID, documentVersionURI, fingerPrint, msg.sender);
