@@ -105,7 +105,7 @@ class TestAPI(APITestCase):
     # ------------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------------------------------------------------------------------------------
-    #   document list - get
+    #   document list
     # ------------------------------------------------------------------------------------------------------------------
 
     @staticmethod
@@ -188,17 +188,75 @@ class TestAPI(APITestCase):
         response = view(request)
         self.assert_only_public_documents(response)
 
+    # ------------------------------------------------------------------------------------------------------------------
+    #   document creation
+    # ------------------------------------------------------------------------------------------------------------------
+    @staticmethod
+    def get_document_creation_request_and_view(bad=False):
+        """
+        Returns a tuple: request and view
+        :return: a tuple: request and view
+        """
+        if not bad:
+            request = factory.post(reverse('document-list'), {'title': 'new document'}, format='json')
+        else:
+            request = factory.post(reverse('document-list'), {'tilte': 'new document'}, format='json')
+        view = DocumentsViewSet.as_view({'post': 'create'})
+        return request, view
+
+    def test_document_creation_no_auth(self):
+        """
+        Create a document with no auth (fails)
+        :return:
+        """
+        request, view = self.get_document_creation_request_and_view()
+        response = view(request)
+        self.assertEqual(response.status_code, 401)
+
+    def test_document_creation_operator_auth(self):
+        """
+        Create a document with operator auth (ok)
+        :return:
+        """
+        request, view = self.get_document_creation_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+
+    def test_document_creation_citizen_auth(self):
+        """
+        Create a document with citizen auth (fails)
+        :return:
+        """
+        request, view = self.get_document_creation_request_and_view()
+        force_authenticate(request, user=self.citizens[1])
+        response = view(request)
+        self.assertEqual(response.status_code, 403)
+
+    def test_document_creation_operator_auth_bad_request(self):
+        """
+        Create a document with operator auth (ok)
+        :return:
+        """
+        request, view = self.get_document_creation_request_and_view(bad=True)
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request)
+        self.assertEqual(response.status_code, 400)
+
     # document creation
     # document detail - get
     # document detail - update
+
     # document version - get
     # document version - create
+
     # permissions get
     # permission get by document
     # permission get by user
     # permission creation
     # permission detail
     # permission delete
+
     # favorite get
     # favorite add
     # favorite delete
