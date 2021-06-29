@@ -8,18 +8,20 @@
 #
 
 from django.test import TestCase
-from rest_framework.test import APIRequestFactory, APITestCase
+from rest_framework.test import APIRequestFactory, APITestCase, force_authenticate
+from rest_framework.authtoken.models import Token
+from django.urls import reverse
 
 from .models import Document, DocumentVersion, Favorite, Permission
+from .views import DocumentsViewSet, DocumentsVersionViewSet
 from ..user.models import PaOperator, Citizen, PublicAuthority
+
 
 factory = APIRequestFactory()
 
 RANGE_MAX = 3
 RANGE_MAX_DOCUMENTS = 5
 RANGE_MAX_DOCUMENT_VERSIONS = 8
-RANGE_MAX_PERMISSIONS = 2
-RANGE_MAX_FAVORITES = 6
 
 
 class TestAPI(APITestCase):
@@ -61,27 +63,27 @@ class TestAPI(APITestCase):
         cls.documents = [Document.objects.create(
             title=('Document ' + str(i)),
             description=('This is the description of the document ' + str(i)),
-            author=cls.pa_operators[i % RANGE_MAX],
+            author=cls.pa_operators[0],
             require_permission=(True if i % RANGE_MAX == 0 else False)
         ) for i in range(RANGE_MAX_DOCUMENTS)]
 
         # 4. Setup Document Versions
         cls.documents_versions = [DocumentVersion.objects.create(
-            author=cls.pa_operators[i % RANGE_MAX],
+            author=cls.pa_operators[0],
             document=cls.documents[i % RANGE_MAX_DOCUMENTS],
         ) for i in range(RANGE_MAX_DOCUMENT_VERSIONS)]
 
         # 5. Setup Permissions
         cls.permissions = [Permission.objects.create(
-            citizen=cls.citizens[i % RANGE_MAX],
+            citizen=cls.citizens[0],
             document=cls.documents[i % RANGE_MAX_DOCUMENTS]
-        ) for i in range(RANGE_MAX_PERMISSIONS)]
+        ) for i in range(RANGE_MAX_DOCUMENTS)]
 
         # 6. Setup Favorites
         cls.favorites = [Favorite.objects.create(
-            citizen=cls.citizens[i % RANGE_MAX],
+            citizen=cls.citizens[0],
             document=cls.documents[i % RANGE_MAX_DOCUMENTS]
-        ) for i in range(RANGE_MAX_FAVORITES)]
+        ) for i in range(RANGE_MAX_DOCUMENTS)]
 
     def test_check_created_data(self):
         """
@@ -93,5 +95,91 @@ class TestAPI(APITestCase):
         self.assertEqual(len(self.citizens), RANGE_MAX)
         self.assertEqual(len(self.documents), RANGE_MAX_DOCUMENTS)
         self.assertEqual(len(self.documents_versions), RANGE_MAX_DOCUMENT_VERSIONS)
-        self.assertEqual(len(self.permissions), RANGE_MAX_PERMISSIONS)
-        self.assertEqual(len(self.favorites), RANGE_MAX_FAVORITES)
+        self.assertEqual(len(self.permissions), RANGE_MAX_DOCUMENTS)
+        self.assertEqual(len(self.favorites), RANGE_MAX_DOCUMENTS)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #
+    #   Document
+    #
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def get_document_list_request_and_view():
+        """
+        Returns a tuple: request and view
+        :return: a tuple: request and view
+        """
+        request = factory.get(reverse('document-list'))
+        view = DocumentsViewSet.as_view({'get': 'list'})
+        return request, view
+
+    def assert_all_documents(self, response):
+        """
+        Check if the response data contains all documents
+        :param response: the response
+        :return:
+        """
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), len(self.documents))
+
+    def assert_only_public_documents(self, response):
+        """
+        Check if the response data contains only public documents
+        :param response: the response
+        :return:
+        """
+        self.assertEqual(response.status_code, 200)
+        self.assertLess(len(response.data['results']), len(self.documents))
+        # check if all document are public
+        [self.assertFalse(d['require_permission']) for d in response.data['results']]
+
+    def test_document_list_no_auth(self):
+        """
+        Get the document list with no auth (only public documents)
+        :return:
+        """
+        request, view = self.get_document_list_request_and_view()
+        response = view(request)
+        self.assert_only_public_documents(response)
+
+    def test_document_list_op1_auth(self):
+        """
+        Get the document list with op1 auth (all documents, operator 1 has created all the documents)
+        :return:
+        """
+        request, view = self.get_document_list_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request)
+        self.assert_all_documents(response)
+
+    def test_document_list_op2_auth(self):
+        """
+        Get the document list with op2 auth (only public documents, there are no document created by op2)
+        :return:
+        """
+        request = factory.get(reverse('document-list'))
+        view = DocumentsViewSet.as_view({'get': 'list'})
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request)
+        self.assert_only_public_documents(response)
+
+    def test_document_list_citizen1_auth(self):
+        """
+        Get the document list with citizen1 auth (citizen1 has permission for all the documents)
+        :return:
+        """
+        request, view = self.get_document_list_request_and_view()
+        force_authenticate(request, user=self.citizens[0])
+        response = view(request)
+        self.assert_all_documents(response)
+
+    def test_document_list_citizen2_auth(self):
+        """
+        Get the document list with citizen2 auth (citizen2 has no permission, he can see only public documents)
+        :return:
+        """
+        request, view = self.get_document_list_request_and_view()
+        force_authenticate(request, user=self.citizens[1])
+        response = view(request)
+        self.assert_only_public_documents(response)

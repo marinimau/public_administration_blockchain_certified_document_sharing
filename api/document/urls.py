@@ -16,8 +16,9 @@ urlpatterns = [
     # ------------------------------------------------------------------------------------------------------------------
     #   Document Views
     # ------------------------------------------------------------------------------------------------------------------
-    path('document/', DocumentsViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('document/<int:pk>', DocumentsViewSet.as_view({'get': 'retrieve', 'put': 'partial_update'})),
+    path('document/', DocumentsViewSet.as_view({'get': 'list', 'post': 'create'}), name='document-list'),
+    path('document/<int:pk>', DocumentsViewSet.as_view({'get': 'retrieve', 'put': 'partial_update'}),
+         name='document-detail'),
     # ------------------------------------------------------------------------------------------------------------------
     #   Document Versions Views
     # ------------------------------------------------------------------------------------------------------------------
