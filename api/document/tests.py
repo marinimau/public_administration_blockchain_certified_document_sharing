@@ -243,8 +243,10 @@ class TestAPI(APITestCase):
         response = view(request)
         self.assertEqual(response.status_code, 400)
 
-    # document creation
-    # document detail - get
+    # ------------------------------------------------------------------------------------------------------------------
+    #   document detail
+    # ------------------------------------------------------------------------------------------------------------------
+
     # document detail - update
 
     # document version - get
