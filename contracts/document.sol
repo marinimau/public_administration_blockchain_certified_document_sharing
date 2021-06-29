@@ -16,7 +16,7 @@ contract Document{
 
     string documentURI;
     address documentAuthor;
-    mapping(uint256 => DocumentVersion) private versions;
+    mapping(uint256 => DocumentVersion) public versions;
     
     
     /**
@@ -38,6 +38,13 @@ contract Document{
         documentURI = _documentURI;
         documentAuthor == msg.sender;
     }
+    
+    
+    /**
+     * --------------------------------------------------------
+     * View
+     * --------------------------------------------------------
+     */
 
     /**
      * @dev Return value of the documentURI
@@ -56,15 +63,37 @@ contract Document{
     }
     
      /**
-     * @dev Create a version for the document
-     * @param documentVersionID: the id of the version
-     * @param documentVersionURI: the URI of the document version in the centralized app
-     * @param fingerPrint: the sha256 fingerPrint of the version attached file.
+     * @dev Retrieve a version of the document
+     * @param _documentVersionID: the id of the version
      */
-    function createDocumentVersion(uint256 documentVersionID, string memory documentVersionURI, bytes32 fingerPrint) public {
-        versions[documentVersionID] = DocumentVersion(documentVersionID, documentVersionURI, fingerPrint, msg.sender);
+    function retrieveDocumentVersion(uint256 _documentVersionID) public view returns (DocumentVersion memory version) {
+        if (bytes(versions[_documentVersionID].documentVersionURI).length != 0) {
+            return versions[_documentVersionID];
+        }
     }
     
+    /**
+     * --------------------------------------------------------
+     * Version creation
+     * --------------------------------------------------------
+     */
+    
+    /**
+     * @dev Create a version for the document
+     * @param _documentVersionID: the id of the version
+     * @param _documentVersionURI: the URI of the document version in the centralized app
+     * @param _fingerPrint: the sha256 fingerPrint of the version attached file.
+     */
+    function createDocumentVersion(uint256 _documentVersionID, string memory _documentVersionURI, bytes32 _fingerPrint) public {
+        versions[_documentVersionID] = DocumentVersion(_documentVersionID, _documentVersionURI, _fingerPrint, msg.sender);
+    }
+    
+    
+    /**
+     * --------------------------------------------------------
+     * Modifiers
+     * --------------------------------------------------------
+     */
     
     modifier onlyDocumentAuthor(){
         require(documentAuthor==msg.sender);
