@@ -43,7 +43,7 @@ class TestAPI(APITestCase):
             is_active=True,
             operator_code=('OP' + str(i)),
             public_authority=cls.public_authorities[i],
-            bc_address='0x0000000000000000000000000000000000000000',
+            bc_address='0x000000000000000000000000000000000000000' + str(i),
             bc_secret_key='secret'
         ) for i in range(RANGE_MAX)]
         [pa.set_password('PaOperator123.') for pa in cls.pa_operators]
