@@ -104,6 +104,10 @@ class TestAPI(APITestCase):
     #
     # ------------------------------------------------------------------------------------------------------------------
 
+    # ------------------------------------------------------------------------------------------------------------------
+    #   document list - get
+    # ------------------------------------------------------------------------------------------------------------------
+
     @staticmethod
     def get_document_list_request_and_view():
         """
@@ -183,3 +187,19 @@ class TestAPI(APITestCase):
         force_authenticate(request, user=self.citizens[1])
         response = view(request)
         self.assert_only_public_documents(response)
+
+    # document creation
+    # document detail - get
+    # document detail - update
+    # document version - get
+    # document version - create
+    # permissions get
+    # permission get by document
+    # permission get by user
+    # permission creation
+    # permission detail
+    # permission delete
+    # favorite get
+    # favorite add
+    # favorite delete
+    # favorite detail
