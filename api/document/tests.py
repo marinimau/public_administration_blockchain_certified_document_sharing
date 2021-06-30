@@ -378,7 +378,7 @@ class TestAPI(APITestCase):
         :return: a tuple: request and view
         """
         request = factory.delete(reverse('document-detail', args=(0,)), format='json')
-        view = DocumentsViewSet.as_view({'delete': 'retrieve'})
+        view = DocumentsViewSet.as_view({'delete': 'destroy'})
         return request, view
 
     def test_delete_document_op1_auth_private_document(self):
@@ -801,7 +801,61 @@ class TestAPI(APITestCase):
     #   permissions delete
     # ------------------------------------------------------------------------------------------------------------------
 
-    # favorite get
-    # favorite add
-    # favorite delete
-    # favorite detail
+    @staticmethod
+    def delete_permissions_request_and_view():
+        """
+        Returns a tuple: request and view
+        :return: a tuple: request and view
+        """
+        request = factory.delete(reverse('permission-detail', args=(1,)), format='json')
+        view = PermissionViewSet.as_view({'delete': 'destroy'})
+        return request, view
+
+    def test_permission_delete_no_auth(self):
+        """
+        Delete permission with no auth (fail 401)
+        :return:
+        """
+        request, view = self.delete_permissions_request_and_view()
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 401)
+
+    def test_permissions_delete_pa1_auth(self):
+        """
+        Delete permission with pa1 (same PA) auth (ok)
+        :return:
+        """
+        request, view = self.delete_permissions_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 204)
+
+    def test_permissions_delete_pa2_auth(self):
+        """
+        Delete permission with pa2 (different PA) auth (fail 404)
+        :return:
+        """
+        request, view = self.delete_permissions_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 404)
+
+    def test_permissions_delete_citizen1_auth(self):
+        """
+        Delete permission with citizen1 (can view document but not permissions) auth (fail 403)
+        :return:
+        """
+        request, view = self.delete_permissions_request_and_view()
+        force_authenticate(request, user=self.citizens[0])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 403)
+
+    def test_permissions_delete_citizen2_auth(self):
+        """
+        Delete permission with citizen2 (can't view neither document and permissions) auth (fail 403)
+        :return:
+        """
+        request, view = self.delete_permissions_request_and_view()
+        force_authenticate(request, user=self.citizens[1])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 403)

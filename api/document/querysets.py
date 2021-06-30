@@ -56,7 +56,6 @@ def document_write_queryset(request):
     return Document.objects.none()
 
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 #
 #   Document Version
