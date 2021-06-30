@@ -1078,3 +1078,66 @@ class TestAPI(APITestCase):
         force_authenticate(request, user=self.citizens[0])
         response = view(request)
         self.assertEqual(response.status_code, 400)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   favorite delete
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def delete_favorites_request_and_view():
+        """
+        Returns a tuple: request and view
+        :return: a tuple: request and view
+        """
+        request = factory.delete(reverse('favorite-detail', args=(1,)), format='json')
+        view = FavoriteViewSet.as_view({'delete': 'destroy'})
+        return request, view
+
+    def test_favorite_delete_no_auth(self):
+        """
+        Delete favorite with no auth (fail 401)
+        :return:
+        """
+        request, view = self.delete_favorites_request_and_view()
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 401)
+
+    def test_favorite_delete_pa1_auth(self):
+        """
+        Delete favorite with pa1 (same PA) auth (fail 403)
+        :return:
+        """
+        request, view = self.delete_favorites_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 403)
+
+    def test_favorite_delete_pa2_auth(self):
+        """
+        Delete favorite with pa2 (different PA) auth (fail 403)
+        :return:
+        """
+        request, view = self.delete_favorites_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 403)
+
+    def test_favorite_delete_citizen1_auth(self):
+        """
+        Delete favorite with citizen1 (ok)
+        :return:
+        """
+        request, view = self.delete_favorites_request_and_view()
+        force_authenticate(request, user=self.citizens[0])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 204)
+
+    def test_favorite_delete_citizen2_auth(self):
+        """
+        Delete favorite with citizen2 (fail 404)
+        :return:
+        """
+        request, view = self.delete_favorites_request_and_view()
+        force_authenticate(request, user=self.citizens[1])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 404)
