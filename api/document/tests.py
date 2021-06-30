@@ -11,7 +11,7 @@ from rest_framework.test import APIRequestFactory, APITestCase, force_authentica
 from django.urls import reverse, resolve
 
 from .models import Document, DocumentVersion, Favorite, Permission
-from .views import DocumentsViewSet, DocumentsVersionViewSet
+from .views import DocumentsViewSet, DocumentsVersionViewSet, PermissionViewSet, FavoriteViewSet
 from ..user.models import PaOperator, Citizen, PublicAuthority
 
 
@@ -75,7 +75,7 @@ class TestAPI(APITestCase):
         cls.permissions = [Permission.objects.create(
             citizen=cls.citizens[0],
             document=cls.documents[i % RANGE_MAX_DOCUMENTS]
-        ) for i in range(RANGE_MAX_DOCUMENTS)]
+        ) for i in range(RANGE_MAX_DOCUMENTS - 1)]
 
         # 6. Setup Favorites
         cls.favorites = [Favorite.objects.create(
@@ -93,7 +93,7 @@ class TestAPI(APITestCase):
         self.assertEqual(len(self.citizens), RANGE_MAX)
         self.assertEqual(len(self.documents), RANGE_MAX_DOCUMENTS)
         self.assertEqual(len(self.documents_versions), RANGE_MAX_DOCUMENT_VERSIONS)
-        self.assertEqual(len(self.permissions), RANGE_MAX_DOCUMENTS)
+        self.assertEqual(len(self.permissions), RANGE_MAX_DOCUMENTS - 1)
         self.assertEqual(len(self.favorites), RANGE_MAX_DOCUMENTS)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -578,13 +578,99 @@ class TestAPI(APITestCase):
         response = view(request, document_id=1, pk=1)
         self.assertEqual(response.status_code, 404)
 
+    # ------------------------------------------------------------------------------------------------------------------
+    #
+    #   Permissions
+    #
+    # ------------------------------------------------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   permissions list
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def get_permissions_list_request_and_view():
+        """
+        Returns a tuple: request and view
+        :return: a tuple: request and view
+        """
+        request = factory.get(reverse('permission-list'), format='json')
+        view = PermissionViewSet.as_view({'get': 'list'})
+        return request, view
+
+    def assert_all_permissions(self, response):
+        """
+        Check if the response data contains all documents
+        :param response: the response
+        :return:
+        """
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), len(self.permissions))  # all documents are owned by pa1
+
+    def assert_no_permissions(self, response):
+        """
+        Check if the response data contains 0 versions
+        :param response: the response
+        :return:
+        """
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 0)
+
+    def test_permission_list_no_auth(self):
+        """
+        Get the permission list with no auth (fail 401)
+        :return:
+        """
+        request, view = self.get_permissions_list_request_and_view()
+        response = view(request)
+        self.assertEqual(response.status_code, 401)
+
+    def test_permissions_list_pa1_auth(self):
+        """
+        Get the permission list with pa1 (same PA) auth (ok)
+        :return:
+        """
+        request, view = self.get_permissions_list_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request)
+        self.assert_all_permissions(response)
+
+    def test_permissions_list_pa2_auth(self):
+        """
+        Get the permission list with pa2 (different PA) auth (0 permissions found)
+        :return:
+        """
+        request, view = self.get_permissions_list_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request)
+        self.assert_no_permissions(response)
+
+    def test_permissions_list_citizen1_auth(self):
+        """
+        Get the permission list with citizen1 (can view document but not permissions) auth (fail 403)
+        :return:
+        """
+        request, view = self.get_permissions_list_request_and_view()
+        force_authenticate(request, user=self.citizens[0])
+        response = view(request)
+        self.assertEqual(response.status_code, 403)
+
+    def test_permissions_list_citizen2_auth(self):
+        """
+        Get the permission list with citizen2 (can't view neither document and permissions) auth (fail 403)
+        :return:
+        """
+        request, view = self.get_permissions_list_request_and_view()
+        force_authenticate(request, user=self.citizens[1])
+        response = view(request)
+        self.assertEqual(response.status_code, 403)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   permissions detail
+    # ------------------------------------------------------------------------------------------------------------------
 
 
-    # permissions get
-    # permission get by document
-    # permission get by user
     # permission creation
-    # permission detail
     # permission delete
 
     # favorite get

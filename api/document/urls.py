@@ -29,8 +29,9 @@ urlpatterns = [
     # ------------------------------------------------------------------------------------------------------------------
     #   Document Permissions Views
     # ------------------------------------------------------------------------------------------------------------------
-    path('permission/', PermissionViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('permission/<int:pk>', PermissionViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+    path('permission/', PermissionViewSet.as_view({'get': 'list', 'post': 'create'}), name='permission-list'),
+    path('permission/<int:pk>', PermissionViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'}),
+         name='permission-detail'),
     # ------------------------------------------------------------------------------------------------------------------
     #   Favorite document Views
     # ------------------------------------------------------------------------------------------------------------------
