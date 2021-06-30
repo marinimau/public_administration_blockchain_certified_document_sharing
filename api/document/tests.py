@@ -8,7 +8,7 @@
 #
 
 from rest_framework.test import APIRequestFactory, APITestCase, force_authenticate
-from django.urls import reverse
+from django.urls import reverse, resolve
 
 from .models import Document, DocumentVersion, Favorite, Permission
 from .views import DocumentsViewSet, DocumentsVersionViewSet
@@ -68,7 +68,7 @@ class TestAPI(APITestCase):
         # 4. Setup Document Versions
         cls.documents_versions = [DocumentVersion.objects.create(
             author=cls.pa_operators[0],
-            document=cls.documents[i % RANGE_MAX_DOCUMENTS],
+            document=cls.documents[0],
         ) for i in range(RANGE_MAX_DOCUMENT_VERSIONS)]
 
         # 5. Setup Permissions
@@ -314,7 +314,7 @@ class TestAPI(APITestCase):
         self.assertEqual(response.status_code, 404)
 
     # ------------------------------------------------------------------------------------------------------------------
-    #   document detail - get
+    #   document detail - update
     # ------------------------------------------------------------------------------------------------------------------
 
     @staticmethod
@@ -368,9 +368,217 @@ class TestAPI(APITestCase):
         response = view(request, pk=2)
         self.assertEqual(response.status_code, 403)
 
+    # ------------------------------------------------------------------------------------------------------------------
+    #   document detail - get
+    # ------------------------------------------------------------------------------------------------------------------
 
-    # document version - get
-    # document version - create
+    @staticmethod
+    def get_document_detail_delete_request_and_view():
+        """
+        Returns a tuple: request and view
+        :return: a tuple: request and view
+        """
+        request = factory.delete(reverse('document-detail', args=(0,)), format='json')
+        view = DocumentsViewSet.as_view({'delete': 'retrieve'})
+        return request, view
+
+    def test_delete_document_op1_auth_private_document(self):
+        """
+        Update details of a private document with op1 (same PA) auth (fails - 403)
+        :return:
+        """
+        request, view = self.get_document_detail_delete_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 403)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #
+    #   Document Version
+    #
+    # ------------------------------------------------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   document version list
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def get_document_version_list_request_and_view():
+        """
+        Returns a tuple: request and view
+        :return: a tuple: request and view
+        """
+        request = factory.get(reverse('document-version-list', args=(1,)), format='json')
+        view = DocumentsVersionViewSet.as_view({'get': 'list'})
+        return request, view
+
+    def assert_version_ok(self, response):
+        """
+        Check if the response data contains all documents
+        :param response: the response
+        :return:
+        """
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), len(self.documents_versions))  # all version same document
+
+    def assert_no_versions(self, response):
+        """
+        Check if the response data contains 0 versions
+        :param response: the response
+        :return:
+        """
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 0)
+
+    def test_document_version_list_no_auth(self):
+        """
+        Get the document 2 version list with no auth (fail 0 versions)
+        :return:
+        """
+        request, view = self.get_document_version_list_request_and_view()
+        response = view(request, document_id=1)
+        self.assert_no_versions(response)
+
+    def test_document_version_list_pa1_auth(self):
+        """
+        Get the document 2 version list with pa1 (same PA) auth (ok)
+        :return:
+        """
+        request, view = self.get_document_version_list_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request, document_id=1)
+        self.assert_version_ok(response)
+
+    def test_document_version_list_pa2_auth(self):
+        """
+        Get the document 2 version list with pa2 (different PA) auth (fail 0 versions)
+        :return:
+        """
+        request, view = self.get_document_version_list_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request, document_id=1)
+        self.assert_no_versions(response)
+
+    def test_document_version_list_citizen1_auth(self):
+        """
+        Get the document 2 version list with citizen1 (has permission) auth (ok)
+        :return:
+        """
+        request, view = self.get_document_version_list_request_and_view()
+        force_authenticate(request, user=self.citizens[0])
+        response = view(request, document_id=1)
+        self.assert_version_ok(response)
+
+    def test_document_version_list_citizen2_auth(self):
+        """
+        Get the document 2 version list with citizen2 (no permission) auth (fail 0 versions)
+        :return:
+        """
+        request, view = self.get_document_version_list_request_and_view()
+        force_authenticate(request, user=self.citizens[1])
+        response = view(request, document_id=1)
+        self.assert_no_versions(response)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   document version create
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def create_document_version_request_and_view():
+        """
+        Returns a tuple: request and view
+        :return: a tuple: request and view
+        """
+        request = factory.post(reverse('document-version-list', args=(1,)), follow=True, format='json')
+        request.resolver_match = resolve(reverse('document-version-list', kwargs={'document_id': 1}))
+        view = DocumentsVersionViewSet.as_view({'post': 'create'})
+        return request, view
+
+    def test_document_version_create_pa1_auth(self):
+        """
+        Create version for the document 1  with pa1 (same PA) auth (ok)
+        :return:
+        """
+        request, view = self.create_document_version_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request, document_id=1)
+        self.assertEqual(response.status_code, 201)
+
+    def test_document_version_create_pa2_auth(self):
+        """
+        Create version for document 2 with pa2 (different PA) auth (fail - 403)
+        :return:
+        """
+        request, view = self.create_document_version_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request, document_id=1)
+        self.assertEqual(response.status_code, 403)
+
+    def test_document_version_create_citizen1_auth(self):
+        """
+        Create version for document 2 with citizen1 auth (fail - 403)
+        :return:
+        """
+        request, view = self.create_document_version_request_and_view()
+        force_authenticate(request, user=self.citizens[1])
+        response = view(request, document_id=1)
+        self.assertEqual(response.status_code, 403)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   document version detail
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def get_document_version_detail_request_and_view():
+        """
+        Returns a tuple: request and view
+        :return: a tuple: request and view
+        """
+        request = factory.get(reverse('document-version-detail', args=(1, 1,)), format='json')
+        view = DocumentsVersionViewSet.as_view({'get': 'retrieve'})
+        return request, view
+
+    def test_document_version_detail_pa1_auth(self):
+        """
+        Get the document 1 version 1 detail with pa1 (same PA) auth (ok)
+        :return:
+        """
+        request, view = self.get_document_version_detail_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request, document_id=1, pk=1)
+        self.assertEqual(response.status_code, 200)
+
+    def test_document_version_detail_pa2_auth(self):
+        """
+        Get the document 1 version 1 detail with pa2 (different PA) auth (fail 404)
+        :return:
+        """
+        request, view = self.get_document_version_detail_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request, document_id=1, pk=1)
+        self.assertEqual(response.status_code, 404)
+
+    def test_document_version_detail_citizen1_auth(self):
+        """
+        Get the document 1 version 1 detail with citizen1 (has permissions) auth (ok)
+        :return:
+        """
+        request, view = self.get_document_version_detail_request_and_view()
+        force_authenticate(request, user=self.citizens[0])
+        response = view(request, document_id=1, pk=1)
+        self.assertEqual(response.status_code, 200)
+
+    def test_document_version_detail_citizen2_auth(self):
+        """
+        Get the document 1 version 1 detail with citizen2 (no permissions) auth (fail 404)
+        :return:
+        """
+        request, view = self.get_document_version_detail_request_and_view()
+        force_authenticate(request, user=self.citizens[1])
+        response = view(request, document_id=1, pk=1)
+        self.assertEqual(response.status_code, 404)
+
+
 
     # permissions get
     # permission get by document

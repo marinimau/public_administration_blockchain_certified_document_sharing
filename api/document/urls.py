@@ -22,8 +22,10 @@ urlpatterns = [
     # ------------------------------------------------------------------------------------------------------------------
     #   Document Versions Views
     # ------------------------------------------------------------------------------------------------------------------
-    path('document/<document_id>/versions/', DocumentsVersionViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('document/<document_id>/versions/<int:pk>', DocumentsVersionViewSet.as_view({'get': 'retrieve'})),
+    path('document/<document_id>/versions/', DocumentsVersionViewSet.as_view({'get': 'list', 'post': 'create'}),
+         name='document-version-list'),
+    path('document/<document_id>/versions/<int:pk>', DocumentsVersionViewSet.as_view({'get': 'retrieve'}),
+         name='document-version-detail'),
     # ------------------------------------------------------------------------------------------------------------------
     #   Document Permissions Views
     # ------------------------------------------------------------------------------------------------------------------
