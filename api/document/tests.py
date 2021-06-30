@@ -14,7 +14,6 @@ from .models import Document, DocumentVersion, Favorite, Permission
 from .views import DocumentsViewSet, DocumentsVersionViewSet, PermissionViewSet, FavoriteViewSet
 from ..user.models import PaOperator, Citizen, PublicAuthority
 
-
 factory = APIRequestFactory()
 
 RANGE_MAX = 3
@@ -74,7 +73,7 @@ class TestAPI(APITestCase):
         # 5. Setup Permissions
         cls.permissions = [Permission.objects.create(
             citizen=cls.citizens[0],
-            document=cls.documents[i % RANGE_MAX_DOCUMENTS]
+            document=cls.documents[i]
         ) for i in range(RANGE_MAX_DOCUMENTS - 1)]
 
         # 6. Setup Favorites
@@ -251,7 +250,7 @@ class TestAPI(APITestCase):
         Returns a tuple: request and view
         :return: a tuple: request and view
         """
-        request = factory.get(reverse('document-detail', args=(0,)),   format='json')
+        request = factory.get(reverse('document-detail', args=(0,)), format='json')
         view = DocumentsViewSet.as_view({'get': 'retrieve'})
         return request, view
 
@@ -732,18 +731,75 @@ class TestAPI(APITestCase):
     #   permissions creation
     # ------------------------------------------------------------------------------------------------------------------
 
-    @staticmethod
-    def create_permissions_request_and_view():
+    def create_permissions_request_and_view(self, bad=False):
         """
         Returns a tuple: request and view
+        :param bad: a flag to generate a bad request
         :return: a tuple: request and view
         """
-        request = factory.post(reverse('permission-list'), format='json')
+        if not bad:
+            request = factory.post(reverse('permission-list'), data={'citizen': self.citizens[0].id,
+                                                                     'document': self.documents[
+                                                                         RANGE_MAX_DOCUMENTS - 1].id}, format='json')
+        else:
+            request = factory.post(reverse('permission-list'),
+                                   data={'citizen': self.citizens[0].id, 'document': self.documents[0].id},
+                                   format='json')
         view = PermissionViewSet.as_view({'post': 'create'})
         return request, view
 
-    # permission creation
-    # permission delete
+    def test_permission_creation_no_auth(self):
+        """
+        Create permission with no auth (fail 401)
+        :return:
+        """
+        request, view = self.create_permissions_request_and_view()
+        response = view(request)
+        self.assertEqual(response.status_code, 401)
+
+    def test_create_permissions_op1_auth(self):
+        """
+        Create permission with op1 auth (ok)
+        :return:
+        """
+        request, view = self.create_permissions_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+
+    def test_create_permissions_op1_auth_bad_request(self):
+        """
+        Create permission with op1 auth bad request (fail 400)
+        :return:
+        """
+        request, view = self.create_permissions_request_and_view(bad=True)
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request)
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_permissions_op2_auth(self):
+        """
+        Create permission with op2 auth (fail 400 document is owned by op1's PA)
+        :return:
+        """
+        request, view = self.create_permissions_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request)
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_permissions_citizen1_auth(self):
+        """
+        Create permission with citizen1 auth (fail, citizen cannot create permissions)
+        :return:
+        """
+        request, view = self.create_permissions_request_and_view()
+        force_authenticate(request, user=self.citizens[0])
+        response = view(request)
+        self.assertEqual(response.status_code, 403)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   permissions delete
+    # ------------------------------------------------------------------------------------------------------------------
 
     # favorite get
     # favorite add

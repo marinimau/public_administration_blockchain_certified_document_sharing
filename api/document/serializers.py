@@ -12,7 +12,7 @@ from rest_framework import serializers
 from api.user.serializers import PaOperatorSerializer, CitizenSerializer
 from contents.messages.get_messages import get_generic_messages, get_document_messages
 from .models import Document, Permission, Favorite, DocumentVersion
-from .querysets import document_queryset
+from .querysets import document_queryset, document_write_queryset
 
 generic_messages = get_generic_messages()
 document_messages = get_document_messages()
@@ -94,9 +94,10 @@ class PermissionSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
     def validate(self, data):
-        if data['document'] not in document_queryset(self.context['request']):
+        if data['document'] not in document_write_queryset(self.context['request']):
             raise serializers.ValidationError(document_messages['document_does_not_exists'])
-        return data
+        else:
+            return data
 
 
 class PermissionSerializerReadOnly(PermissionSerializer):

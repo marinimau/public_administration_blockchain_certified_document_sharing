@@ -21,7 +21,7 @@ from api.user.models import PaOperator, Citizen
 
 def document_queryset(request):
     """
-    Get only documents of the same public authority
+    Get document with read permissions
     :return:
     """
     if request.user is not None:
@@ -40,6 +40,21 @@ def document_queryset(request):
                     Q(id__in=[permission.document.id for permission in filtered_permissions]) | Q(
                         require_permission=False))
     return Document.objects.filter(require_permission=False)
+
+
+def document_write_queryset(request):
+    """
+    Get document with read permissions
+    :return:
+    """
+    if request.user is not None:
+        # is authenticated
+        if PaOperator.objects.filter(username=request.user.username).exists():
+            # is an operator
+            operator = PaOperator.objects.get(username=request.user.username)
+            return Document.objects.filter(author__public_authority=operator.public_authority)
+    return Document.objects.none()
+
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -75,4 +90,3 @@ def permission_all_queryset(caller):
     """
     operator = PaOperator.objects.get(username=caller.request.user.username)
     return Permission.objects.filter(document__author__public_authority=operator.public_authority)
-
