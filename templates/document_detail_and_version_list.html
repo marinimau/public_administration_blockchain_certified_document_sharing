@@ -20,14 +20,13 @@
                             <p>{{ document.description }} </p>
                         </article>
                         {% if user.is_authenticated %}
-                            {% if not is_favorite %}
-                                <button type="button" class="Button Button--default u-text-r-xs">Aggiungi ai preferiti
-                                </button>
-                            {% else %}
-                                <button type="button" class="Button Button--default u-text-r-xs is-pressed">Rimuovi dai
-                                    preferiti
-                                </button>
-                            {% endif %}
+                            <button type="button" id="like-btn"
+                                    class="Button Button--default u-text-r-xs {% if is_favorite %}is-pressed{% endif %}">
+                                {% if is_favorite %}Rimuovi dai preferiti
+                                {% else %}Aggiungi ai preferiti
+                                {% endif %}
+                            </button>
+                            {% csrf_token %}
                         {% endif %}
                     </div>
                     <div class="u-sizeFull u-text-r-s u-color-70 u-margin-top-xxl">
@@ -50,5 +49,28 @@
             </section>
         </div>
     </div>
+    <script type="text/javascript">
+        $('#like-btn').click(function () {
+            $.ajax({
+                type: 'POST',
+                url: {% url 'handle-favorite' %},
+                data: {
+                    'document_id': {{ document.id }},
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                success: evalFavorite,
+                dataType: 'html'
+            });
+
+            function evalFavorite(rawData, jqXHR) {
+                const data = $.parseJSON(rawData);
+                if (data['is_favorite']) {
+                    $('#like-btn').addClass('is-pressed').text('Rimuovi dai preferiti')
+                } else {
+                    $('#like-btn').removeClass("is-pressed").text('Aggiungi ai preferiti')
+                }
+            }
+        });
+    </script>
 
 {% endblock site %}

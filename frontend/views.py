@@ -6,19 +6,24 @@
 #   Repository: https://github.com/marinimau/public_administration_blockchain_certified_document_sharing
 #   Credits: @marinimau (https://github.com/marinimau)
 #
+import json
 
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.http import require_POST
 from rest_framework.status import HTTP_404_NOT_FOUND
 
-from api.document.models import DocumentVersion, Favorite
+from api.document.models import DocumentVersion, Favorite, Document
 from api.document.querysets import document_queryset
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
 #   Document
 #
 # ----------------------------------------------------------------------------------------------------------------------
+from api.user.models import Citizen
+
 
 def document_list_view(request):
     """
@@ -48,7 +53,8 @@ def document_versions_list_view(request, document_id):
     if exists:
         document = queryset.get(id=document_id)
         versions = DocumentVersion.objects.filter(document=document).order_by('-creation_timestamp')
-        is_favorite = Favorite.objects.filter(document__id=document_id, citizen__username=request.user.username)
+        is_favorite = Favorite.objects.filter(document__id=document_id,
+                                              citizen__username=request.user.username).exists()
         return render(request, 'document_detail_and_version_list.html',
                       {'document': document, 'versions': versions, 'is_favorite': is_favorite})
     return handler404(request)
@@ -91,6 +97,26 @@ def favorites_list_view(request):
         document_list = document_queryset(request).filter(id__in=[f.document.id for f in favorites])
         return render(request, 'document_list_page.html', {'documents': document_list})
     return handler404(request)
+
+
+@login_required
+@require_POST
+def handle_favorite(request):
+    """
+    Add / remove a document to favorite
+    :param request: the request
+    :return: the favorite status
+    """
+    document_id = request.POST.get('document_id', None)
+    if request.method == 'POST' and Citizen.objects.filter(
+            username=request.user.username).exists() and Document.objects.filter(id=document_id).exists():
+        if not Favorite.objects.filter(citizen__username=request.user.username, document__id=document_id).exists():
+            Favorite.objects.create(citizen=Citizen.objects.get(username=request.user.username),
+                                    document=Document.objects.get(id=document_id))
+            return JsonResponse({'is_favorite': True})
+        else:
+            Favorite.objects.filter(citizen__username=request.user.username, document__id=document_id).delete()
+            return JsonResponse({'is_favorite': False})
 
 
 # ----------------------------------------------------------------------------------------------------------------------

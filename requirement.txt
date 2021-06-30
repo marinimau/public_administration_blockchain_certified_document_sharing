@@ -2,3 +2,4 @@ django
 djangorestframework
 django-qr-code
 gnosis-py
+coverage
