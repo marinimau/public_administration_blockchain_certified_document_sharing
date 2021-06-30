@@ -949,5 +949,132 @@ class TestAPI(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assert_no_favorite(response)
 
+    # ------------------------------------------------------------------------------------------------------------------
+    #   favorite detail
+    # ------------------------------------------------------------------------------------------------------------------
 
+    @staticmethod
+    def get_favorite_detail_request_and_view():
+        """
+        Returns a tuple: request and view
+        :return: a tuple: request and view
+        """
+        request = factory.get(reverse('favorite-detail', args=(1,)), format='json')
+        view = FavoriteViewSet.as_view({'get': 'retrieve'})
+        return request, view
 
+    def test_favorite_detail_no_auth(self):
+        """
+        Get the favorite detail with no auth (fail 401)
+        :return:
+        """
+        request, view = self.get_favorite_detail_request_and_view()
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 401)
+
+    def test_favorite_detail_pa1_auth(self):
+        """
+        Get the favorite detail with pa1 (same PA) auth (fail 403)
+        :return:
+        """
+        request, view = self.get_favorite_detail_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 403)
+
+    def test_favorite_detail_pa2_auth(self):
+        """
+        Get the favorite detail with pa2 (different PA) auth (fail 404)
+        :return:
+        """
+        request, view = self.get_favorite_detail_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 403)
+
+    def test_favorite_detail_citizen1_auth(self):
+        """
+        Get favorite detail with citizen1 (ok)
+        :return:
+        """
+        request, view = self.get_favorite_detail_request_and_view()
+        force_authenticate(request, user=self.citizens[0])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+
+    def test_favorite_detail_citizen2_auth(self):
+        """
+        Get favorite detail with citizen2 (fail 404)
+        :return:
+        """
+        request, view = self.get_favorite_detail_request_and_view()
+        force_authenticate(request, user=self.citizens[1])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 404)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   favorite creation
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def create_favorite_request_and_view(self, bad=False):
+        """
+        Returns a tuple: request and view
+        :param bad: a flag to generate a bad request
+        :return: a tuple: request and view
+        """
+        if not bad:
+            request = factory.post(reverse('favorite-list'),
+                                   data={'document': self.documents[RANGE_MAX_DOCUMENTS - 1].id}, format='json')
+        else:
+            request = factory.post(reverse('favorite-list'), data={'document': self.documents[0].id}, format='json')
+        view = FavoriteViewSet.as_view({'post': 'create'})
+        return request, view
+
+    def test_favorite_creation_no_auth(self):
+        """
+        Create favorite with no auth (fail 401)
+        :return:
+        """
+        request, view = self.create_favorite_request_and_view()
+        response = view(request)
+        self.assertEqual(response.status_code, 401)
+
+    def test_create_favorite_op1_auth(self):
+        """
+        Create favorite with op1 auth (fail 403)
+        :return:
+        """
+        request, view = self.create_favorite_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request)
+        self.assertEqual(response.status_code, 403)
+
+    def test_create_favorite_op2_auth(self):
+        """
+        Create favorite with op2 auth (fail 403)
+        :return:
+        """
+        request, view = self.create_favorite_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request)
+        self.assertEqual(response.status_code, 403)
+
+    def test_create_favorite_citizen1_auth(self):
+        """
+        Create favorite with citizen1 auth (ok)
+        :return:
+        """
+        request, view = self.create_favorite_request_and_view()
+        force_authenticate(request, user=self.citizens[0])
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+
+    def test_create_favorite_citizen1_auth_bad_request(self):
+        """
+        Create favorite with citizen1 auth (fail 400)
+        :return:
+        """
+        request, view = self.create_favorite_request_and_view(bad=True)
+        force_authenticate(request, user=self.citizens[0])
+        response = view(request)
+        self.assertEqual(response.status_code, 400)
