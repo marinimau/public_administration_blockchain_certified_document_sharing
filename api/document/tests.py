@@ -7,9 +7,7 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
-from django.test import TestCase
 from rest_framework.test import APIRequestFactory, APITestCase, force_authenticate
-from rest_framework.authtoken.models import Token
 from django.urls import reverse
 
 from .models import Document, DocumentVersion, Favorite, Permission
@@ -206,7 +204,7 @@ class TestAPI(APITestCase):
 
     def test_document_creation_no_auth(self):
         """
-        Create a document with no auth (fails - unauthorized)
+        Create a document with no auth (fails - 401)
         :return:
         """
         request, view = self.get_document_creation_request_and_view()
@@ -225,7 +223,7 @@ class TestAPI(APITestCase):
 
     def test_document_creation_citizen_auth(self):
         """
-        Create a document with citizen auth (fails - forbidden)
+        Create a document with citizen auth (fails - 403)
         :return:
         """
         request, view = self.get_document_creation_request_and_view()
@@ -235,7 +233,7 @@ class TestAPI(APITestCase):
 
     def test_document_creation_operator_auth_bad_request(self):
         """
-        Create a document with operator auth (fails - bad request)
+        Create a document with operator auth (fails - 400)
         :return:
         """
         request, view = self.get_document_creation_request_and_view(bad=True)
@@ -274,6 +272,101 @@ class TestAPI(APITestCase):
         request, view = self.get_document_detail_get_request_and_view()
         response = view(request, pk=1)
         self.assertEqual(response.status_code, 404)
+
+    def test_get_document_detail_op1_auth_private_document(self):
+        """
+        Get details of a private document with op1 (same PA) auth (ok)
+        :return:
+        """
+        request, view = self.get_document_detail_get_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_document_detail_op2_auth_private_document(self):
+        """
+        Get details of a private document with op2 (different PA) auth (fails 404)
+        :return:
+        """
+        request, view = self.get_document_detail_get_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_document_detail_citizen1_auth_private_document(self):
+        """
+        Get details of a private document with citizen1 (has permission) auth (ok)
+        :return:
+        """
+        request, view = self.get_document_detail_get_request_and_view()
+        force_authenticate(request, user=self.citizens[0])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_document_detail_citizen2_auth_private_document(self):
+        """
+        Get details of a private document with citizen2 (no permissions) auth (fails 404)
+        :return:
+        """
+        request, view = self.get_document_detail_get_request_and_view()
+        force_authenticate(request, user=self.citizens[2])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 404)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   document detail - get
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def get_document_detail_update_request_and_view():
+        """
+        Returns a tuple: request and view
+        :return: a tuple: request and view
+        """
+        request = factory.put(reverse('document-detail', args=(0,)), data={'title': 'New title'}, format='json')
+        view = DocumentsViewSet.as_view({'put': 'partial_update'})
+        return request, view
+
+    def test_update_document_detail_op1_auth_private_document(self):
+        """
+        Update details of a private document with op1 (same PA) auth (ok)
+        :return:
+        """
+        request, view = self.get_document_detail_update_request_and_view()
+        force_authenticate(request, user=self.pa_operators[0])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['title'], 'New title')
+
+    def test_update_document_detail_op2_auth_private_document(self):
+        """
+        Update details of a private document with op2 (different PA) auth (fails - 404)
+        :return:
+        """
+        request, view = self.get_document_detail_update_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 404)
+
+    def test_update_document_detail_op2_auth_public_document(self):
+        """
+        Update details of a private document with op2 (different PA) auth (fails - 403)
+        :return:
+        """
+        request, view = self.get_document_detail_update_request_and_view()
+        force_authenticate(request, user=self.pa_operators[1])
+        response = view(request, pk=2)
+        self.assertEqual(response.status_code, 403)
+
+    def test_update_document_detail_citizen_auth_public_document(self):
+        """
+        Update details of a private document with citizen auth (fails - 403)
+        :return:
+        """
+        request, view = self.get_document_detail_update_request_and_view()
+        force_authenticate(request, user=self.citizens[0])
+        response = view(request, pk=2)
+        self.assertEqual(response.status_code, 403)
 
 
     # document version - get
