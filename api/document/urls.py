@@ -35,8 +35,9 @@ urlpatterns = [
     # ------------------------------------------------------------------------------------------------------------------
     #   Favorite document Views
     # ------------------------------------------------------------------------------------------------------------------
-    path('my_favorites/', FavoriteViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('my_favorites/<int:pk>', FavoriteViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+    path('my_favorites/', FavoriteViewSet.as_view({'get': 'list', 'post': 'create'}), name='favorite-list'),
+    path('my_favorites/<int:pk>', FavoriteViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'}),
+         name='favorite-detail'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
