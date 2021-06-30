@@ -206,7 +206,7 @@ class TestAPI(APITestCase):
 
     def test_document_creation_no_auth(self):
         """
-        Create a document with no auth (fails)
+        Create a document with no auth (fails - unauthorized)
         :return:
         """
         request, view = self.get_document_creation_request_and_view()
@@ -225,7 +225,7 @@ class TestAPI(APITestCase):
 
     def test_document_creation_citizen_auth(self):
         """
-        Create a document with citizen auth (fails)
+        Create a document with citizen auth (fails - forbidden)
         :return:
         """
         request, view = self.get_document_creation_request_and_view()
@@ -235,7 +235,7 @@ class TestAPI(APITestCase):
 
     def test_document_creation_operator_auth_bad_request(self):
         """
-        Create a document with operator auth (ok)
+        Create a document with operator auth (fails - bad request)
         :return:
         """
         request, view = self.get_document_creation_request_and_view(bad=True)
@@ -244,10 +244,37 @@ class TestAPI(APITestCase):
         self.assertEqual(response.status_code, 400)
 
     # ------------------------------------------------------------------------------------------------------------------
-    #   document detail
+    #   document detail - get
     # ------------------------------------------------------------------------------------------------------------------
 
-    # document detail - update
+    @staticmethod
+    def get_document_detail_get_request_and_view():
+        """
+        Returns a tuple: request and view
+        :return: a tuple: request and view
+        """
+        request = factory.get(reverse('document-detail', args=(0,)),   format='json')
+        view = DocumentsViewSet.as_view({'get': 'retrieve'})
+        return request, view
+
+    def test_get_document_detail_no_auth_public_document(self):
+        """
+        Get details of a public document without auth (ok)
+        :return:
+        """
+        request, view = self.get_document_detail_get_request_and_view()
+        response = view(request, pk=2)
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_document_detail_no_auth_private_document(self):
+        """
+        Get details of a private document without auth (fails - 404)
+        :return:
+        """
+        request, view = self.get_document_detail_get_request_and_view()
+        response = view(request, pk=1)
+        self.assertEqual(response.status_code, 404)
+
 
     # document version - get
     # document version - create
