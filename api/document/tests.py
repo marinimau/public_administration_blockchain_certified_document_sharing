@@ -68,7 +68,7 @@ class TestAPI(APITestCase):
         cls.documents_versions = [DocumentVersion.objects.create(
             author=cls.pa_operators[0],
             document=cls.documents[0],
-        ) for i in range(RANGE_MAX_DOCUMENT_VERSIONS)]
+        ) for _ in range(RANGE_MAX_DOCUMENT_VERSIONS)]
 
         # 5. Setup Permissions
         cls.permissions = [Permission.objects.create(

@@ -69,7 +69,7 @@ def document_version_detail_view(request, version_id):
             file_name = version.file_resource.name
             return render(request, 'document_version_detail_page.html',
                           {'version': version, 'is_last': is_last, 'file_name': file_name})
-    return error_404(request)
+    return handler404(request)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -88,7 +88,7 @@ def favorites_list_view(request):
         favorites = Favorite.objects.filter(citizen__username=request.user.username)
         document_list = document_queryset(request).filter(id__in=[f.document.id for f in favorites])
         return render(request, 'document_list_page.html', {'documents': document_list})
-    return error_404(request)
+    return handler404(request)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -97,7 +97,7 @@ def favorites_list_view(request):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-def error_404(request):
+def handler404(request):
     """
     A custom 404 error page for the documents
     :param request: the request
