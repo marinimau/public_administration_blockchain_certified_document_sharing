@@ -48,8 +48,10 @@ def document_versions_list_view(request, document_id):
     if exists:
         document = queryset.get(id=document_id)
         versions = DocumentVersion.objects.filter(document=document).order_by('-creation_timestamp')
-        return render(request, 'document_detail_and_version_list.html', {'document': document, 'versions': versions})
-    return error_404(request)
+        is_favorite = Favorite.objects.filter(document__id=document_id, citizen__username=request.user.username)
+        return render(request, 'document_detail_and_version_list.html',
+                      {'document': document, 'versions': versions, 'is_favorite': is_favorite})
+    return handler404(request)
 
 
 def document_version_detail_view(request, version_id):

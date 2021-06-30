@@ -19,6 +19,16 @@
                         <article class="Prose u-layout-prose">
                             <p>{{ document.description }} </p>
                         </article>
+                        {% if user.is_authenticated %}
+                            {% if not is_favorite %}
+                                <button type="button" class="Button Button--default u-text-r-xs">Aggiungi ai preferiti
+                                </button>
+                            {% else %}
+                                <button type="button" class="Button Button--default u-text-r-xs is-pressed">Rimuovi dai
+                                    preferiti
+                                </button>
+                            {% endif %}
+                        {% endif %}
                     </div>
                     <div class="u-sizeFull u-text-r-s u-color-70 u-margin-top-xxl">
                         <h3 class="u-border-bottom-m u-text-h3 u-color-60">Elenco versioni:</h3>
