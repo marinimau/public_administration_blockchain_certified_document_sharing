@@ -17,7 +17,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Document is Ownable{
 
     string documentURI;
-    address documentAuthor;
     mapping(uint256 => DocumentVersion) public versions;
     mapping(address => bool) whitelist;
     
@@ -43,7 +42,7 @@ contract Document is Ownable{
      */
     constructor(string memory _documentURI) {
         documentURI = _documentURI;
-        documentAuthor == msg.sender;
+        owner == msg.sender;
     }
     
     
