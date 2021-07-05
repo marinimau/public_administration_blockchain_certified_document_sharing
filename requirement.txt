@@ -3,3 +3,5 @@ djangorestframework
 django-qr-code
 gnosis-py
 coverage
+web3
+py-solc-x

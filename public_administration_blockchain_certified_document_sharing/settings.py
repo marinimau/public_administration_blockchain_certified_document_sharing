@@ -44,6 +44,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# SITE URL
+SITE_URL = 'https://siteurl.com/'
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -74,7 +77,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'public_administration_blockchain_certified_document_sharing.urls'
 
-LOGIN_REDIRECT_URL='/'
+LOGIN_REDIRECT_URL = '/'
 
 TEMPLATES = [
     {

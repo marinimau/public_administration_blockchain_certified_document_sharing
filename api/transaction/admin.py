@@ -9,7 +9,7 @@
 
 from django.contrib import admin
 
-from .models import DocumentTransaction, DocumentVersionTransaction
+from .models import DocumentSC, DocumentVersionTransaction
 
-admin.site.register(DocumentTransaction)
+admin.site.register(DocumentSC)
 admin.site.register(DocumentVersionTransaction)
