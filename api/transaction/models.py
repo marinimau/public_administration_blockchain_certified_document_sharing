@@ -54,6 +54,7 @@ class DocumentSC(AbstractTransaction):
     This class represent the model of transaction for Document model
     """
     document = models.OneToOneField(Document, on_delete=models.RESTRICT)
+    abi = models.JSONField(null=False)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

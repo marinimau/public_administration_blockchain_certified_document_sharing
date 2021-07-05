@@ -14,6 +14,12 @@ from django.conf import settings
 from .models import DocumentSC, DocumentVersionTransaction
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Common
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
 def web3_connection(document_author):
     """
     Create the connection to the blockchain
@@ -23,9 +29,15 @@ def web3_connection(document_author):
     w3 = Web3(Web3.EthereumTesterProvider())
     w3.eth.default_account = w3.eth.accounts[0]
     # TODO: use infura and document author wallet
-    assert(w3.isConnected())
+    assert (w3.isConnected())
     return w3
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Document SC
+#
+# ----------------------------------------------------------------------------------------------------------------------
 
 def compile_contract():
     """
@@ -43,14 +55,14 @@ def deploy_contract(w3, compiled_contract, document_page_url):
     :param w3: the w3 connection
     :param compiled_contract: the compiled contract
     :param document_page_url: the document page url
-    :return:
+    :return: a pari tx_receipt, abi
     """
     contract_id, contract_interface = compiled_contract.popitem()
     bytecode = contract_interface['bin']
     abi = contract_interface['abi']
     document_sc = w3.eth.contract(abi=abi, bytecode=bytecode)
     tx_hash = document_sc.constructor().transact()
-    return w3.eth.wait_for_transaction_receipt(tx_hash)
+    return w3.eth.wait_for_transaction_receipt(tx_hash), abi
 
 
 def create_document_contract(document):
@@ -65,11 +77,14 @@ def create_document_contract(document):
     compiled_contract = compile_contract()
     # 3: deploy contract
     document_page_url = str(settings.SITE_URL + str(document.id))
-    tx_receipt = deploy_contract(w3, compiled_contract, document_page_url)
+    tx_receipt, abi = deploy_contract(w3, compiled_contract, document_page_url)
     # 4: store transaction data
-    # DocumentSC.objects.create()
+    DocumentSC.objects.create(transaction_address=tx_receipt.contractAddress,
+                              author_address=document.author.bc_address, document=document, abi=abi)
 
 
-
-
-
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Document Version Transaction
+#
+# ----------------------------------------------------------------------------------------------------------------------

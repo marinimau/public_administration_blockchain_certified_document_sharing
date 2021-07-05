@@ -10,20 +10,20 @@
 from rest_framework import serializers
 
 from contents.messages.get_messages import get_generic_messages
-from .models import DocumentTransaction, DocumentVersionTransaction
+from .models import DocumentSC, DocumentVersionTransaction
 
 generic_messages = get_generic_messages()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-#   Document Transaction Serializer
+#   Document SC Serializer
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-class DocumentTransactionSerializer(serializers.ModelSerializer):
+class DocumentSCSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DocumentTransaction
+        model = DocumentSC
         fields = ['id', 'transaction_address', 'author_address', 'creation_timestamp', 'document',
                   'signature_public_key']
         read_only_fields = ['id', 'transaction_address', 'author_address', 'creation_timestamp', 'document',
