@@ -6,12 +6,13 @@
 #   Repository: https://github.com/marinimau/public_administration_blockchain_certified_document_sharing
 #   Credits: @marinimau (https://github.com/marinimau)
 #
-
-from web3 import Web3
+import solcx
+from web3 import Web3, EthereumTesterProvider
 from solcx import compile_source
 
 from django.conf import settings
 from .models import DocumentSC, DocumentVersionTransaction
+from contracts.contracts import document
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -26,8 +27,7 @@ def web3_connection(document_author):
     :param document_author: the document author
     :return: the connection
     """
-    w3 = Web3(Web3.EthereumTesterProvider())
-    w3.eth.default_account = w3.eth.accounts[0]
+    w3 = Web3(EthereumTesterProvider())
     # TODO: use infura and document author wallet
     assert (w3.isConnected())
     return w3
@@ -44,9 +44,7 @@ def compile_contract():
     Compile the contract from source code
     :return: the contract bytecode
     """
-    with open('../../contracts/document.sol', 'r') as file:
-        data = file.read().replace('\n', '')
-    return compile_source(data)
+    return compile_source(document)
 
 
 def deploy_contract(w3, compiled_contract, document_page_url):
@@ -71,6 +69,7 @@ def create_document_contract(document):
     :param document: the document obj
     :return:
     """
+    solcx.install_solc()
     # 1: create connection connection
     w3 = web3_connection(document.author)
     # 2: compile contract from source code
