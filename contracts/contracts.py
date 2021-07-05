@@ -7,6 +7,7 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
+
 document = '''
 // contracts/document.sol
 // SPDX-License-Identifier: CC-BY-4.0
@@ -17,7 +18,7 @@ document = '''
 pragma solidity ^0.8.0;
 
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "./@openzeppelin/contracts/access/Ownable.sol";
 
 
 /**

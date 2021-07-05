@@ -44,7 +44,7 @@ def compile_contract():
     Compile the contract from source code
     :return: the contract bytecode
     """
-    return compile_source(document)
+    return compile_source(document, allow_paths="./@openzeppelin/contracts/access/Ownable.sol")
 
 
 def deploy_contract(w3, compiled_contract, document_page_url):
