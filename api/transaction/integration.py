@@ -44,7 +44,8 @@ def compile_contract():
     Compile the contract from source code
     :return: the contract bytecode
     """
-    return compile_source(document, allow_paths="./@openzeppelin/contracts/access/Ownable.sol")
+    return compile_source(document,
+                          allow_paths=["https://raw.githubusercontent.com/OpenZeppelin/openzeppelin-contracts/master/contracts/access/Ownable.sol"])
 
 
 def deploy_contract(w3, compiled_contract, document_page_url):
@@ -80,7 +81,6 @@ def create_document_contract(document):
     # 4: store transaction data
     DocumentSC.objects.create(transaction_address=tx_receipt.contractAddress,
                               author_address=document.author.bc_address, document=document, abi=abi)
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 #

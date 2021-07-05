@@ -18,7 +18,7 @@ document = '''
 pragma solidity ^0.8.0;
 
 
-import "./@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 
 /**
@@ -53,7 +53,6 @@ contract Document is Ownable{
      */
     constructor(string memory _documentURI) {
         documentURI = _documentURI;
-        owner == msg.sender;
     }
     
     
@@ -73,10 +72,10 @@ contract Document is Ownable{
     
     /**
      * @dev Return address of the author of the document
-     * @return value of 'documentAuthor'
+     * @return value of 'owner'
      */
     function retrieveDocumentAuthor() public view returns (address){
-        return documentAuthor;
+        return owner();
     }
     
      /**

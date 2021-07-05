@@ -7,24 +7,24 @@
 pragma solidity ^0.8.0;
 
 
-import "./@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 
 /**
  * @title Document
  * @dev Store & retrieve document version, versions can be created nlòy by white listed operators
  */
-contract Document is Ownable{
+contract Document is Ownable {
 
     string documentURI;
     mapping(uint256 => DocumentVersion) public versions;
     mapping(address => bool) whitelist;
-    
-    
+
+
     event AddedToWhitelist(address indexed account);
     event RemovedFromWhitelist(address indexed account);
-    
-    
+
+
     /**
      * @title DocumentVersion
      * @dev Struct for the document version
@@ -42,10 +42,9 @@ contract Document is Ownable{
      */
     constructor(string memory _documentURI) {
         documentURI = _documentURI;
-        owner == msg.sender;
     }
-    
-    
+
+
     /**
      * --------------------------------------------------------
      * View
@@ -59,48 +58,48 @@ contract Document is Ownable{
     function retrieveDocumentURI() public view returns (string memory){
         return documentURI;
     }
-    
+
     /**
      * @dev Return address of the author of the document
-     * @return value of 'documentAuthor'
+     * @return value of 'owner'
      */
     function retrieveDocumentAuthor() public view returns (address){
-        return documentAuthor;
+        return owner();
     }
-    
-     /**
-     * @dev Retrieve a version of the document
-     * @param _documentVersionID: the id of the version
-     */
+
+    /**
+    * @dev Retrieve a version of the document
+    * @param _documentVersionID: the id of the version
+    */
     function retrieveDocumentVersion(uint256 _documentVersionID) public view returns (DocumentVersion memory version) {
         if (bytes(versions[_documentVersionID].documentVersionURI).length != 0) {
             return versions[_documentVersionID];
         }
     }
-    
+
     /**
      * --------------------------------------------------------
      * Version creation
      * --------------------------------------------------------
      */
-    
+
     /**
      * @dev Create a version for the document
      * @param _documentVersionID: the id of the version
      * @param _documentVersionURI: the URI of the document version in the centralized app
      * @param _fingerPrint: the sha256 fingerPrint of the version attached file.
      */
-    function createDocumentVersion(uint256 _documentVersionID, string memory _documentVersionURI, bytes32 _fingerPrint) public onlyWhitelisted{
+    function createDocumentVersion(uint256 _documentVersionID, string memory _documentVersionURI, bytes32 _fingerPrint) public onlyWhitelisted {
         versions[_documentVersionID] = DocumentVersion(_documentVersionID, _documentVersionURI, _fingerPrint, msg.sender);
     }
-    
-    
+
+
     /**
      * --------------------------------------------------------
      * WhiteList
      * --------------------------------------------------------
      */
-    
+
     /**
      * @dev Add an operator to whitelist
      * @param _address the address of the operator
@@ -110,7 +109,7 @@ contract Document is Ownable{
         emit AddedToWhitelist(_address);
     }
 
-     /**
+    /**
      * @dev Remove an operator to whitelist
      * @param _address the address of the operator
      */
@@ -119,16 +118,37 @@ contract Document is Ownable{
         emit RemovedFromWhitelist(_address);
     }
 
-     /**
-     * @dev Check if an operator is in whitelist
-     * @param _address the address of the operator
-     * @return a flag that indicates if the operator is in the whitelist
+    /**
+     * @dev add many addresses to the whitelist
+     * @param addrs addresses
      */
-    function isWhitelisted(address _address) public view returns(bool) {
+    function addAddressesToWhitelist(address[] memory addrs) onlyOwner public{
+        for (uint256 i = 0; i < addrs.length; i++) {
+            addToWhiteList(addrs[i]);
+        }
+    }
+
+
+    /**
+     * @dev remove addresses from the whitelist
+     * @param addrs addresses
+     */
+    function removeAddressesFromWhitelist(address[] memory addrs) onlyOwner public {
+        for (uint256 i = 0; i < addrs.length; i++) {
+            removeFromWhiteList(addrs[i]);
+        }
+    }
+
+    /**
+    * @dev Check if an operator is in whitelist
+    * @param _address the address of the operator
+    * @return a flag that indicates if the operator is in the whitelist
+    */
+    function isWhitelisted(address _address) public view returns (bool) {
         return whitelist[_address];
     }
-    
-    
+
+
     /**
      * --------------------------------------------------------
      * Modifiers
@@ -143,5 +163,4 @@ contract Document is Ownable{
         _;
     }
 
-    
 }
