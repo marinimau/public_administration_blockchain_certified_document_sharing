@@ -21,14 +21,16 @@ from ..transaction.integration import create_document_contract, create_document_
 # ----------------------------------------------------------------------------------------------------------------------
 
 @receiver(post_save, sender=Document)
-def create_document_sc(sender, instance, *args, **kwargs):
+def create_document_sc(sender, instance, created, *args, **kwargs):
     """
     Pre-save for document model, we use it to create the document sc
     :param sender: the sender
     :param instance: The document instance
+    :param created: a flag that indicate if obj is created
     :return:
     """
-    create_document_contract(document=instance)
+    if created:
+        create_document_contract(document=instance)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -38,11 +40,13 @@ def create_document_sc(sender, instance, *args, **kwargs):
 # ----------------------------------------------------------------------------------------------------------------------
 
 @receiver(post_save, sender=DocumentVersion)
-def create_document_sc(sender, instance, *args, **kwargs):
+def create_document_sc(sender, instance, created, *args, **kwargs):
     """
     Pre-save for document version model, we use it to create the document version transaction in the document sc
+    :param created: a flag that indicate if obj is created
     :param sender: the sender
     :param instance: The document version instance
     :return:
     """
-    create_document_version_transaction(document_version=instance)
+    if created:
+        create_document_version_transaction(document_version=instance)

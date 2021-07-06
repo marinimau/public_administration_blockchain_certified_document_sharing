@@ -7,7 +7,7 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
-from gnosis.eth.django.models import EthereumAddressField
+from gnosis.eth.django.models import EthereumAddressField, HexField
 from django.db import models
 from django.utils.timezone import now
 
@@ -27,7 +27,6 @@ class AbstractTransaction(models.Model):
     DocumentTransaction model and DocumentVersionTransaction model extend this class
     """
     id = models.AutoField(primary_key=True)
-    transaction_address = EthereumAddressField(null=False, unique=True)
     author_address = EthereumAddressField(null=False)
     creation_timestamp = models.DateField(null=False, default=now)
 
@@ -53,6 +52,7 @@ class DocumentSC(AbstractTransaction):
     Document Transaction
     This class represent the model of transaction for Document model
     """
+    transaction_address = EthereumAddressField(null=False, unique=True)
     document = models.OneToOneField(Document, on_delete=models.RESTRICT)
 
 
@@ -68,17 +68,7 @@ class DocumentVersionTransaction(AbstractTransaction):
     This class represent the model of transaction for Document Version model
     """
 
-    class ValidationStatus(models.TextChoices):
-        """
-        Transaction status enumeration
-        Valid only for document transaction
-        """
-        PENDING = 'PENDING'
-        VALID = 'VALID'
-        ALTERED = 'ALTERED'
-
+    transaction_address = HexField(null=False, max_length=500)
     hash_fingerprint = models.CharField(max_length=256, null=False)
     document_version = models.OneToOneField(DocumentVersion, on_delete=models.RESTRICT, null=False)
     download_url = models.URLField(null=False)
-    validation_status = models.CharField(null=False, max_length=7, choices=ValidationStatus.choices,
-                                         default=ValidationStatus.PENDING)

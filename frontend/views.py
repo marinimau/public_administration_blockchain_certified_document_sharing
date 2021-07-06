@@ -22,6 +22,7 @@ from api.document.querysets import document_queryset
 #   Document
 #
 # ----------------------------------------------------------------------------------------------------------------------
+from api.transaction.integration import validate_document_version
 from api.user.models import Citizen
 
 
@@ -76,6 +77,7 @@ def document_version_detail_view(request, version_id):
             is_last = version == \
                       DocumentVersion.objects.filter(document=version.document).order_by('-creation_timestamp')[0]
             file_name = version.file_resource.name
+            validation_flag, address = validate_document_version(version)
             return render(request, 'document_version_detail_page.html',
                           {'version': version, 'is_last': is_last, 'file_name': file_name,
                            'auto_download': auto_download is not False})
