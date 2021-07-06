@@ -97,8 +97,9 @@ def create_document_version_transaction(document_version):
     # 3: check if user can create transaction
     # 4: create the transaction in the SC
     document_version_page_url = str(settings.SITE_URL + 'version/' + str(document_version.id))
-    fingerprint = calculate_hash_fingerprint(do)
+    fingerprint = calculate_hash_fingerprint(document_version.file_resource.path)
     tx_receipt = 0
+
     # 5: store transaction data
     '''
     DocumentVersionTransaction.objects.create(transaction_address=tx_receipt.contractAddress,
