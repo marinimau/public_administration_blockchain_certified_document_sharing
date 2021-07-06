@@ -71,12 +71,14 @@ def document_version_detail_view(request, version_id):
     exists = DocumentVersion.objects.filter(id=version_id).exists()
     if exists:
         version = DocumentVersion.objects.get(id=version_id)
+        auto_download = request.GET.get('download', False)
         if queryset.filter(id=version.document.id).exists():  # security check
             is_last = version == \
                       DocumentVersion.objects.filter(document=version.document).order_by('-creation_timestamp')[0]
             file_name = version.file_resource.name
             return render(request, 'document_version_detail_page.html',
-                          {'version': version, 'is_last': is_last, 'file_name': file_name})
+                          {'version': version, 'is_last': is_last, 'file_name': file_name,
+                           'auto_download': auto_download is not False})
     return handler404(request)
 
 
