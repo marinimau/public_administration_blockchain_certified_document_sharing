@@ -15,14 +15,14 @@
     <!-- custom meta -->
     {% block meta %}{% endblock meta %}
 
-    <!-- <link rel="preload" href="{% static "IWT.min.js" %}" as="script"> -->
+    <!-- <link rel="preload" href="{% static "agid/IWT.min.js" %}" as="script"> -->
 
     <!-- include HTML5shim per Explorer 8 -->
-    <script src="{% static "vendor/modernizr.js" %}"></script>
+    <script src="{% static "agid/vendor/modernizr.js" %}"></script>
 
-    <link media="all" rel="stylesheet" href="{% static "build.css" %}">
+    <link media="all" rel="stylesheet" href="{% static "agid/build.css" %}">
 
-    <script src="{% static "vendor/jquery.min.js" %}"></script>
+    <script src="{% static "agid/vendor/jquery.min.js" %}"></script>
 
     <!-- custom scripts -->
     {% block scripts %}{% endblock scripts %}
@@ -136,17 +136,17 @@
 
 
 <!--[if IE 8]>
-  <script src="{% static "vendor/respond.min.js" %}"></script>
-  <script src="{% static "vendor/rem.min.js" %}"></script>
-  <script src="{% static "vendor/selectivizr.js" %}"></script>
-  <script src="{% static "vendor/slice.js" %}"></script>
+  <script src="{% static "agid/vendor/respond.min.js" %}"></script>
+  <script src="{% static "agid/vendor/rem.min.js" %}"></script>
+  <script src="{% static "agid/vendor/selectivizr.js" %}"></script>
+  <script src="{% static "agid/vendor/slice.js" %}"></script>
   <![endif]-->
 
 <!--[if lte IE 9]>
-  <script src="{% static "vendor/polyfill.min.js" %}"></script>
+  <script src="{% static "agid/vendor/polyfill.min.js" %}"></script>
   <![endif]-->
 
-<script src="{% static "IWT.min.js" %}"></script>
+<script src="{% static "agid/IWT.min.js" %}"></script>
 
 </body>
 </html>

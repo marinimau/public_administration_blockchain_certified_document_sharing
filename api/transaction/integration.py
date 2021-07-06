@@ -8,11 +8,10 @@
 #
 import solcx
 from web3 import Web3, EthereumTesterProvider
-from solcx import compile_source
 
 from django.conf import settings
 from .models import DocumentSC, DocumentVersionTransaction
-from contracts.contracts import document
+from contracts.document_compiled import bytecode, abi
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -39,28 +38,16 @@ def web3_connection(document_author):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-def compile_contract():
-    """
-    Compile the contract from source code
-    :return: the contract bytecode
-    """
-    return compile_source(document,
-                          allow_paths=["https://raw.githubusercontent.com/OpenZeppelin/openzeppelin-contracts/master/contracts/access/Ownable.sol"])
-
-
-def deploy_contract(w3, compiled_contract, document_page_url):
+def deploy_contract(w3, document_page_url):
     """
     TDeploy the contract
     :param w3: the w3 connection
-    :param compiled_contract: the compiled contract
     :param document_page_url: the document page url
     :return: a pari tx_receipt, abi
     """
-    contract_id, contract_interface = compiled_contract.popitem()
-    bytecode = contract_interface['bin']
-    abi = contract_interface['abi']
+    print(type(abi))
     document_sc = w3.eth.contract(abi=abi, bytecode=bytecode)
-    tx_hash = document_sc.constructor().transact()
+    tx_hash = document_sc.constructor(document_page_url).transact()
     return w3.eth.wait_for_transaction_receipt(tx_hash), abi
 
 
@@ -70,15 +57,12 @@ def create_document_contract(document):
     :param document: the document obj
     :return:
     """
-    solcx.install_solc()
     # 1: create connection connection
     w3 = web3_connection(document.author)
-    # 2: compile contract from source code
-    compiled_contract = compile_contract()
-    # 3: deploy contract
+    # 2: deploy contract
     document_page_url = str(settings.SITE_URL + str(document.id))
-    tx_receipt, abi = deploy_contract(w3, compiled_contract, document_page_url)
-    # 4: store transaction data
+    tx_receipt, abi = deploy_contract(w3, document_page_url)
+    # 3: store transaction data
     DocumentSC.objects.create(transaction_address=tx_receipt.contractAddress,
                               author_address=document.author.bc_address, document=document, abi=abi)
 
