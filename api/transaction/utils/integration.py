@@ -8,11 +8,12 @@
 #
 
 import hashlib
-from web3 import Web3, EthereumTesterProvider, HTTPProvider
+from web3 import Web3, HTTPProvider
 
 from django.conf import settings
-from .models import DocumentSC, DocumentVersionTransaction
+from api.transaction.models import DocumentSC, DocumentVersionTransaction
 from contracts.document_compiled import bytecode, abi
+from .network_params import *
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -26,7 +27,7 @@ def web3_connection():
     Create the connection to the blockchain
     :return: the connection
     """
-    w3 = Web3(HTTPProvider('https://ropsten.infura.io/v3/3ef38272cfde40faa0af05d47918d339'))
+    w3 = Web3(HTTPProvider(HTTP_PROVIDER_URL))
     assert (w3.isConnected())
     return w3
 
@@ -53,8 +54,8 @@ def deploy_contract(w3, document_page_url, secret_key):
     construct_txn = document_sc.constructor(document_page_url).buildTransaction({
         'from': acct.address,
         'nonce': w3.eth.getTransactionCount(acct.address),
-        'gas': 1500000,
-        'gasPrice': 30000000000})
+        'gas': GAS_CONTRACT_DEPLOY,
+        'gasPrice': GAS_PRICE})
     # 4. sign transaction
     signed = acct.signTransaction(construct_txn)
     # 5. send signed transaction
@@ -120,7 +121,8 @@ def create_document_version_transaction(document_version):
     sc = get_contract(w3, document_version.document.id)
     if sc is not None:
         # 3: check if user can create transaction
-        # TODO: check if user is authorized
+        if not check_if_whitelisted(sc, document_version.author.bc_address):
+            add_operator_to_whitelist(sc, document_version.author.bc_address)
         # 4: create the transaction in the SC
         document_version_page_url = str(settings.SITE_URL + 'version/' + str(document_version.id))
         fingerprint = calculate_hash_fingerprint(document_version.file_resource.path)
@@ -162,3 +164,39 @@ def validate_document_version(document_version):
         print(output)
         return 1, None
     return 0, None  # PENDING
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+#   Whitelist management
+#
+# ----------------------------------------------------------------------------------------------------------------------
+
+def check_if_whitelisted(sc, operator_address):
+    """
+    Check if the operator can perform version creation
+    :param sc: the document sc
+    :param operator_address: the operator address
+    :return: a flag that indicates if is whitelisted
+    """
+    return False
+
+
+def add_operator_to_whitelist(sc, operator_address):
+    """
+    Add an operator to the whitelist
+    :param sc: the document sc
+    :param operator_address: the operator address
+    :return:
+    """
+    pass
+
+
+def remove_operator_from_whitelist(sc, operator_address):
+    """
+    Remove an operator from the whitelist
+    :param sc: the document sc
+    :param operator_address: the operator address
+    :return:
+    """
+    pass

@@ -11,7 +11,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import Document, DocumentVersion
-from ..transaction.integration import create_document_contract, create_document_version_transaction
+from api.transaction.utils.integration import create_document_contract, create_document_version_transaction
 
 
 # ----------------------------------------------------------------------------------------------------------------------

@@ -6,7 +6,6 @@
 #   Repository: https://github.com/marinimau/public_administration_blockchain_certified_document_sharing
 #   Credits: @marinimau (https://github.com/marinimau)
 #
-import json
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -22,7 +21,7 @@ from api.document.querysets import document_queryset
 #   Document
 #
 # ----------------------------------------------------------------------------------------------------------------------
-from api.transaction.integration import validate_document_version
+from api.transaction.utils.integration import validate_document_version
 from api.user.models import Citizen
 
 
