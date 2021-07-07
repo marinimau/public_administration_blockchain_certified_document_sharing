@@ -48,6 +48,9 @@ class PaOperator(User):
     bc_address = EthereumAddressField(null=False)
     bc_secret_key = models.CharField(max_length=200, null=False)
 
+    class Meta:
+        verbose_name = 'Pa Operator'
+
     def __str__(self):
         """
         To string method
@@ -96,6 +99,9 @@ class Citizen(User):
 
     cf = models.CharField(unique=True, max_length=16, null=False)
     region = models.CharField(choices=Regions.choices, max_length=30, null=False)
+
+    class Meta:
+        verbose_name = 'Citizen'
 
     def __str__(self):
         """
