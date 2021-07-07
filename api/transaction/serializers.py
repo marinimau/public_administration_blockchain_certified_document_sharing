@@ -24,10 +24,8 @@ generic_messages = get_generic_messages()
 class DocumentSCSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentSC
-        fields = ['id', 'transaction_address', 'author_address', 'creation_timestamp', 'document',
-                  'signature_public_key']
-        read_only_fields = ['id', 'transaction_address', 'author_address', 'creation_timestamp', 'document',
-                            'signature_public_key']
+        fields = ['id', 'transaction_address', 'author_address', 'creation_timestamp', 'document']
+        read_only_fields = ['id', 'transaction_address', 'author_address', 'creation_timestamp', 'document']
 
 
 # ----------------------------------------------------------------------------------------------------------------------

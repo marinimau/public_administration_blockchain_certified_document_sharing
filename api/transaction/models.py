@@ -28,7 +28,7 @@ class AbstractTransaction(models.Model):
     """
     id = models.AutoField(primary_key=True)
     author_address = EthereumAddressField(null=False)
-    creation_timestamp = models.DateField(null=False, default=now)
+    creation_timestamp = models.DateTimeField(null=False, default=now)
 
     class Meta:
         abstract = True
@@ -38,7 +38,7 @@ class AbstractTransaction(models.Model):
         To string method
         :return: The address of the transaction
         """
-        return str(self.transaction_address)
+        return str(self.id)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ class DocumentSC(AbstractTransaction):
     This class represent the model of transaction for Document model
     """
     transaction_address = EthereumAddressField(null=False, unique=True)
-    document = models.OneToOneField(Document, on_delete=models.RESTRICT)
+    document = models.OneToOneField(Document, on_delete=models.RESTRICT, related_name='document_sc', null=False)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -70,5 +70,6 @@ class DocumentVersionTransaction(AbstractTransaction):
 
     transaction_address = HexField(null=False, max_length=500)
     hash_fingerprint = models.CharField(max_length=256, null=False)
-    document_version = models.OneToOneField(DocumentVersion, on_delete=models.RESTRICT, null=False)
+    document_version = models.OneToOneField(DocumentVersion, on_delete=models.RESTRICT,
+                                            related_name='version_transaction', null=False)
     download_url = models.URLField(null=False)

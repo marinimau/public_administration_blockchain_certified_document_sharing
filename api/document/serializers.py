@@ -13,6 +13,7 @@ from api.user.serializers import PaOperatorSerializer, CitizenSerializer
 from contents.messages.get_messages import get_generic_messages, get_document_messages
 from .models import Document, Permission, Favorite, DocumentVersion
 from .querysets import document_queryset, document_write_queryset
+from ..transaction.serializers import DocumentSCSerializer, DocumentVersionTransactionSerializer
 
 generic_messages = get_generic_messages()
 document_messages = get_document_messages()
@@ -32,8 +33,10 @@ class DocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Document
-        fields = '__all__'
-        read_only_fields = ['id', 'author']
+        fields = ['id', 'title', 'description', 'author', 'require_permission', 'document_sc']
+        read_only_fields = ['id', 'author', 'document_sc']
+
+    document_sc = DocumentSCSerializer()
 
 
 class DocumentSerializerReadOnly(DocumentSerializer):
@@ -58,8 +61,10 @@ class DocumentVersionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DocumentVersion
-        fields = '__all__'
-        read_only_fields = ['id', 'document', 'author', 'creation_timestamp']
+        fields = ['id', 'document', 'author', 'creation_timestamp', 'version_transaction']
+        read_only_fields = ['id', 'document', 'author', 'creation_timestamp', 'version_transaction']
+
+    version_transaction = DocumentVersionTransactionSerializer()
 
     def validate_document(self, value):
         if document_queryset(self.context['request']).filter(id=value.id).exists():
