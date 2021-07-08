@@ -7,9 +7,9 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
-from django.conf import settings
 from .eng.generic_messages import messages as generic_messages
 from .eng.document_messages import messages as document_messages
+from .eng.transaction_messages import messages as transaction_messages
 
 
 def get_generic_messages():
@@ -26,3 +26,12 @@ def get_document_messages():
     :return: a dict with the document app's messages
     """
     return dict(document_messages)
+
+
+def get_transaction_messages():
+    """
+    Get the transaction app's messages
+    :return: a dict with the transaction app's messages
+    """
+    return dict(transaction_messages)
+

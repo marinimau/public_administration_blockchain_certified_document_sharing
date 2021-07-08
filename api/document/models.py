@@ -57,7 +57,7 @@ class DocumentVersion(models.Model):
     id = models.AutoField(primary_key=True)
     author = models.ForeignKey(PaOperator, null=False, on_delete=models.RESTRICT)
     creation_timestamp = models.DateTimeField(null=False, default=now)
-    file_resource = models.FileField(default=None)
+    file_resource = models.FileField(null=False)
     document = models.ForeignKey(Document, null=False, on_delete=models.RESTRICT)
 
     class Meta:

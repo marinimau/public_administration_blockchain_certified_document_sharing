@@ -61,7 +61,7 @@ class DocumentVersionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DocumentVersion
-        fields = ['id', 'document', 'author', 'creation_timestamp', 'version_transaction']
+        fields = ['id', 'document', 'author', 'creation_timestamp', 'file_resource', 'version_transaction']
         read_only_fields = ['id', 'document', 'author', 'creation_timestamp', 'version_transaction']
 
     version_transaction = DocumentVersionTransactionSerializer(read_only=True)
