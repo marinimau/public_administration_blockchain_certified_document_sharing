@@ -209,7 +209,7 @@ def validate_document_version(document_version):
             local_fingerprint = calculate_hash_fingerprint(document_version.file_resource)
             result = 1 if bc_fingerprint == local_fingerprint else -1
             return result, transaction_address
-    return 0, None  # PENDING
+    return 0, None
 
 
 # ----------------------------------------------------------------------------------------------------------------------

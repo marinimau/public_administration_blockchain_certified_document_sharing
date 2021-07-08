@@ -9,5 +9,7 @@
 
 messages = {
     'balance_is_to_low': 'your balance is too low to perform this operation',
-    'sc_not_found': 'sc of the document not found'
+    'sc_not_found': 'sc of the document not found',
+    'version_not_found': 'please specific a valid document version',
+    'bad_version_id': 'version id must be an unsigned integer'
 }

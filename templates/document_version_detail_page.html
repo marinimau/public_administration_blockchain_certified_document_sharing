@@ -28,13 +28,14 @@
                         </p>
                     </div>
                     <div class="u-text-r-l u-layout-prose">
-                        <a href="{% url 'document-versions' version.document.id %}" class="u-text-h2 u-textClean u-color-black">{{ version.document.title }}</a>
+                        <a href="{% url 'document-versions' version.document.id %}"
+                           class="u-text-h2 u-textClean u-color-black">{{ version.document.title }}</a>
                         <!-- check if there is a new version of this document -->
                         {% if not is_last %}
                             <div class="Prose Alert Alert--info Alert--withIcon u-layout-prose u-padding-r-bottom u-padding-r-right u-margin-top-l"
                                  role="alert">
                                 <p class="u-text-p">Esiste una nuova versione di questo documento.
-                                    <a href="{% url 'document-versions' version.document.id  %}">
+                                    <a href="{% url 'document-versions' version.document.id %}">
                                         Vedi versioni documento</a>
                                 </p>
 
@@ -51,6 +52,21 @@
                 </div>
 
             </section>
+
+            {% if validation_flag == -1 %}
+            <div class="Prose Alert Alert--error Alert--withIcon u-layout-prose u-padding-r-bottom u-padding-r-right u-margin-r-bottom"
+                 role="alert">
+                <h2 class="u-text-h3">
+                    Documento alterato
+                </h2>
+                <p class="u-text-p">Questo significa che l'impronta hash di '{{ document.metadata.title }}' salvata
+                    sulla blockchain non coincide con l'impronta del documento disponibile al download.</p>
+                <code class="u-text-r-xxs" style="background: #dddddd">
+                    tx address: {{ tx_address }}
+                </code>
+            </div>
+
+            {% elif validation_flag == 1 %}
             <div class="Prose Alert Alert--success Alert--withIcon u-layout-prose u-padding-r-bottom u-padding-r-right u-margin-r-bottom"
                  role="alert">
                 <h2 class="u-text-h3">
@@ -58,8 +74,22 @@
                 </h2>
                 <p class="u-text-p">Questo significa che l'impronta hash di '{{ document.metadata.title }}' salvata
                     sulla blockchain coincide con l'impronta del documento disponibile al download.</p>
-                <button type="button" class="Button Button--info u-text-r-xs">Dettagli</button>
+                <code class="u-text-r-xxs" style="background: #dddddd">
+                    tx address: {{ tx_address }}
+                </code>
             </div>
+
+            {% else %}
+            <div class="Prose Alert Alert--warning Alert--withIcon u-layout-prose u-padding-r-bottom u-padding-r-right u-margin-r-bottom"
+                 role="alert">
+                <h2 class="u-text-h3">
+                    Dati certificazione non disponibili
+                </h2>
+                <p class="u-text-p">Questo significa che al documento non è ancora stata associata una transazione su
+                    blockchain che lo certifica</p>
+            </div>
+
+            {% endif %}
 
         </div>
 
