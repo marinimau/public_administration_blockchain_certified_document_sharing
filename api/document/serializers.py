@@ -36,7 +36,7 @@ class DocumentSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'author', 'require_permission', 'document_sc']
         read_only_fields = ['id', 'author', 'document_sc']
 
-    document_sc = DocumentSCSerializer()
+    document_sc = DocumentSCSerializer(read_only=True)
 
 
 class DocumentSerializerReadOnly(DocumentSerializer):
@@ -64,7 +64,7 @@ class DocumentVersionSerializer(serializers.ModelSerializer):
         fields = ['id', 'document', 'author', 'creation_timestamp', 'version_transaction']
         read_only_fields = ['id', 'document', 'author', 'creation_timestamp', 'version_transaction']
 
-    version_transaction = DocumentVersionTransactionSerializer()
+    version_transaction = DocumentVersionTransactionSerializer(read_only=True)
 
     def validate_document(self, value):
         if document_queryset(self.context['request']).filter(id=value.id).exists():

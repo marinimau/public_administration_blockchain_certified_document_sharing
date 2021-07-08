@@ -8,7 +8,7 @@
 #
 
 import hashlib
-from web3 import Web3, HTTPProvider
+from web3 import Web3, HTTPProvider, EthereumTesterProvider
 
 from django.conf import settings
 from api.transaction.models import DocumentSC, DocumentVersionTransaction
@@ -50,6 +50,7 @@ def deploy_contract(w3, document_page_url, secret_key):
     document_sc = w3.eth.contract(abi=abi, bytecode=bytecode)
     # 2. authenticate operator
     acct = w3.eth.account.privateKeyToAccount(secret_key)
+    print(acct.address)
     # 3. create the constructor transaction
     construct_txn = document_sc.constructor(document_page_url).buildTransaction({
         'from': acct.address,

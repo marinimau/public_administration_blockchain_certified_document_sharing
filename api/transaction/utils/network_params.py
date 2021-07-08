@@ -7,6 +7,6 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
-HTTP_PROVIDER_URL = 'https://ropsten.infura.io/v3/3ef38272cfde40faa0af05d47918d339'
+HTTP_PROVIDER_URL = 'https://rinkeby.infura.io/v3/3ef38272cfde40faa0af05d47918d339'
 GAS_CONTRACT_DEPLOY = 1500000
 GAS_PRICE = 30000000000
