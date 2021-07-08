@@ -7,6 +7,8 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
+import sys
+
 from django.apps import AppConfig
 
 
@@ -15,4 +17,5 @@ class DocumentConfig(AppConfig):
     name = 'api.document'
 
     def ready(self):
-        import api.document.signals
+        if 'test' not in sys.argv:
+            import api.document.signals

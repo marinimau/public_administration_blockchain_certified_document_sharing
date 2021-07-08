@@ -501,7 +501,7 @@ class TestAPI(APITestCase):
         request, view = self.create_document_version_request_and_view()
         force_authenticate(request, user=self.pa_operators[0])
         response = view(request, document_id=1)
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 400)  # needs file
 
     def test_document_version_create_pa2_auth(self):
         """
