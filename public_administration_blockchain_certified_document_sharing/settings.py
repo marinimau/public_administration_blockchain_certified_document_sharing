@@ -128,6 +128,13 @@ DATABASES = {
     }
 }
 
+# Blockchain params
+
+HTTP_PROVIDER_URL = 'https://rinkeby.infura.io/v3/3ef38272cfde40faa0af05d47918d339'
+GAS_CONTRACT_DEPLOY = 1500000
+GAS_PRICE = 30000000000
+
+
 # Media directory
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

@@ -16,7 +16,6 @@ from django.conf import settings
 from api.transaction.models import DocumentSC, DocumentVersionTransaction
 from contents.messages.get_messages import get_transaction_messages
 from contracts.document_compiled import bytecode, abi
-from .network_params import *
 
 
 transaction_messages = get_transaction_messages()
@@ -33,12 +32,12 @@ def web3_connection():
     Create the connection to the blockchain
     :return: the connection
     """
-    w3 = Web3(HTTPProvider(HTTP_PROVIDER_URL))
+    w3 = Web3(HTTPProvider(settings.HTTP_PROVIDER_URL))
     assert (w3.isConnected())
     return w3
 
 
-def check_balance(w3, address, minimum_required=GAS_CONTRACT_DEPLOY):
+def check_balance(w3, address, minimum_required=settings.GAS_CONTRACT_DEPLOY):
     """
     Check if the operator has enough Wei in their balance
     :param w3: the w3 connection
@@ -74,8 +73,8 @@ def deploy_contract(w3, document_page_url, secret_key):
     construct_txn = document_sc.constructor(document_page_url).buildTransaction({
         'from': acct.address,
         'nonce': w3.eth.getTransactionCount(acct.address),
-        'gas': GAS_CONTRACT_DEPLOY,
-        'gasPrice': GAS_PRICE})
+        'gas': settings.GAS_CONTRACT_DEPLOY,
+        'gasPrice': settings.GAS_PRICE})
     # 4. sign transaction
     signed = acct.signTransaction(construct_txn)
     # 5. send signed transaction
@@ -157,8 +156,8 @@ def create_document_version_transaction(document_version):
                                                                fingerprint).buildTransaction({
             'from': acct.address,
             'nonce': w3.eth.getTransactionCount(acct.address),
-            'gas': GAS_CONTRACT_DEPLOY,
-            'gasPrice': GAS_PRICE})
+            'gas': settings.GAS_CONTRACT_DEPLOY,
+            'gasPrice': settings.GAS_PRICE})
         # 7. sign transaction
         signed = acct.signTransaction(create_version_tx)
         # 8. send signed transaction
@@ -243,8 +242,8 @@ def add_operator_to_whitelist(w3, sc, owner_secret_key, operator_address):
     add_to_whitelist_tx = sc.functions.addToWhiteList(operator_address).buildTransaction({
         'from': acct.address,
         'nonce': w3.eth.getTransactionCount(acct.address),
-        'gas': GAS_CONTRACT_DEPLOY,
-        'gasPrice': GAS_PRICE})
+        'gas': settings.GAS_CONTRACT_DEPLOY,
+        'gasPrice': settings.GAS_PRICE})
     # 3. sign transaction
     signed = acct.signTransaction(add_to_whitelist_tx)
     # 4. send signed transaction
@@ -267,8 +266,8 @@ def remove_operator_from_whitelist(w3, sc, owner_secret_key, operator_address):
     remove_from_whitelist_tx = sc.functions.removeFromWhiteList(operator_address).buildTransaction({
         'from': acct.address,
         'nonce': w3.eth.getTransactionCount(acct.address),
-        'gas': GAS_CONTRACT_DEPLOY,
-        'gasPrice': GAS_PRICE})
+        'gas': settings.GAS_CONTRACT_DEPLOY,
+        'gasPrice': settings.GAS_PRICE})
     # 3. sign transaction
     signed = acct.signTransaction(remove_from_whitelist_tx)
     # 4. send signed transaction
