@@ -7,93 +7,19 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
-from rest_framework.test import APIRequestFactory, APITestCase, force_authenticate
+from rest_framework.test import APIRequestFactory, force_authenticate
 from django.urls import reverse, resolve
 
-from .models import Document, DocumentVersion, Favorite, Permission
-from .views import DocumentsViewSet, DocumentsVersionViewSet, PermissionViewSet, FavoriteViewSet
-from ..user.models import PaOperator, Citizen, PublicAuthority
+from api.document.test.abstract_document_test import DocumentTestAbstract
+from api.document.views import DocumentsViewSet, DocumentsVersionViewSet, PermissionViewSet, FavoriteViewSet
 
 factory = APIRequestFactory()
 
-RANGE_MAX = 3
-RANGE_MAX_DOCUMENTS = 5
-RANGE_MAX_DOCUMENT_VERSIONS = 8
 
-
-class TestAPI(APITestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        """
-        Set-up the data for the test
-        :return:
-        """
-        # 1. Setup Public Authorities
-        cls.public_authorities = [PublicAuthority.objects.create(name=('Authority' + str(i))) for i in range(RANGE_MAX)]
-
-        # 2. Setup PA operators
-        cls.pa_operators = [PaOperator.objects.create(
-            username=('operator' + str(i)),
-            email=('operator' + str(i) + '@operators.com'),
-            password='test',
-            is_active=True,
-            operator_code=('OP' + str(i)),
-            public_authority=cls.public_authorities[i],
-            bc_address='0x000000000000000000000000000000000000000' + str(i),
-            bc_secret_key='secret'
-        ) for i in range(RANGE_MAX)]
-        [pa.set_password('PaOperator123.') for pa in cls.pa_operators]
-
-        # 2. Setup Citizens
-        cls.citizens = [Citizen.objects.create(
-            username=('citizen' + str(i)),
-            email=('citizen' + str(i) + '@citizen.com'),
-            password='test',
-            is_active=True,
-            cf=('ctzctz00c00c000' + str(i)),
-            region=Citizen.Regions.SIC
-        ) for i in range(RANGE_MAX)]
-        [c.set_password('Citizen123.') for c in cls.citizens]
-
-        # 3. Setup Documents
-        cls.documents = [Document.objects.create(
-            title=('Document ' + str(i)),
-            description=('This is the description of the document ' + str(i)),
-            author=cls.pa_operators[0],
-            require_permission=(True if i % RANGE_MAX == 0 else False)
-        ) for i in range(RANGE_MAX_DOCUMENTS)]
-
-        # 4. Setup Document Versions
-        cls.documents_versions = [DocumentVersion.objects.create(
-            author=cls.pa_operators[0],
-            document=cls.documents[0],
-        ) for _ in range(RANGE_MAX_DOCUMENT_VERSIONS)]
-
-        # 5. Setup Permissions
-        cls.permissions = [Permission.objects.create(
-            citizen=cls.citizens[0],
-            document=cls.documents[i]
-        ) for i in range(RANGE_MAX_DOCUMENTS - 1)]
-
-        # 6. Setup Favorites
-        cls.favorites = [Favorite.objects.create(
-            citizen=cls.citizens[0],
-            document=cls.documents[i]
-        ) for i in range(RANGE_MAX_DOCUMENTS - 1)]
-
-    def test_check_created_data(self):
-        """
-        Check the data created by setUpTestData
-        :return:
-        """
-        self.assertEqual(len(self.public_authorities), RANGE_MAX)
-        self.assertEqual(len(self.pa_operators), RANGE_MAX)
-        self.assertEqual(len(self.citizens), RANGE_MAX)
-        self.assertEqual(len(self.documents), RANGE_MAX_DOCUMENTS)
-        self.assertEqual(len(self.documents_versions), RANGE_MAX_DOCUMENT_VERSIONS)
-        self.assertEqual(len(self.permissions), RANGE_MAX_DOCUMENTS - 1)
-        self.assertEqual(len(self.favorites), RANGE_MAX_DOCUMENTS - 1)
+class DocumentTestAcceptance(DocumentTestAbstract):
+    """
+    Test acceptance for document app
+    """
 
     # ------------------------------------------------------------------------------------------------------------------
     #
@@ -740,7 +666,8 @@ class TestAPI(APITestCase):
         if not bad:
             request = factory.post(reverse('permission-list'), data={'citizen': self.citizens[0].id,
                                                                      'document': self.documents[
-                                                                         RANGE_MAX_DOCUMENTS - 1].id}, format='json')
+                                                                         self.RANGE_MAX_DOCUMENTS - 1].id},
+                                   format='json')
         else:
             request = factory.post(reverse('permission-list'),
                                    data={'citizen': self.citizens[0].id, 'document': self.documents[0].id},
@@ -1024,7 +951,7 @@ class TestAPI(APITestCase):
         """
         if not bad:
             request = factory.post(reverse('favorite-list'),
-                                   data={'document': self.documents[RANGE_MAX_DOCUMENTS - 1].id}, format='json')
+                                   data={'document': self.documents[self.RANGE_MAX_DOCUMENTS - 1].id}, format='json')
         else:
             request = factory.post(reverse('favorite-list'), data={'document': self.documents[0].id}, format='json')
         view = FavoriteViewSet.as_view({'post': 'create'})
