@@ -8,6 +8,7 @@
 #
 
 from django.test import TestCase
+from django.urls import ResolverMatch
 
 from api.document.test.abstract_document_test import DocumentTestAbstract
 from ..permissions import *
@@ -176,7 +177,7 @@ class DocumentUnitTest(DocumentTestAbstract, TestCase):
         self.assertFalse(result)
 
     # ------------------------------------------------------------------------------------------------------------------
-    #   DocumentPermissions
+    #   DocumentPermissions - List
     # ------------------------------------------------------------------------------------------------------------------
 
     def test_document_permission_post_ok(self):
@@ -250,3 +251,104 @@ class DocumentUnitTest(DocumentTestAbstract, TestCase):
         request.user = self.pa_operators[0]
         result = document_permissions.has_permission(request, None)
         self.assertTrue(result)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   DocumentPermissions - obj
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def test_document_detail_permission_update_ok(self):
+        """
+        Testing "DocumentPermission" custom permission - update detail (ok)
+        :return:
+        """
+        document_permissions = DocumentPermissions()
+        request = HttpRequest()
+        request.method = 'PUT'
+        request.user = self.pa_operators[0]
+        obj = self.documents[0]
+        result = document_permissions.has_object_permission(request, None, obj)
+        self.assertTrue(result)
+
+    def test_document_detail_permission_update_fail_operator_in_different_pa(self):
+        """
+        Testing "DocumentPermission" custom permission - update detail (fail, the operator is in a different PA)
+        :return:
+        """
+        document_permissions = DocumentPermissions()
+        request = HttpRequest()
+        request.method = 'PUT'
+        request.user = self.pa_operators[1]
+        obj = self.documents[0]
+        result = document_permissions.has_object_permission(request, None, obj)
+        self.assertFalse(result)
+
+    def test_document_detail_permission_update_fail_citizen(self):
+        """
+        Testing "DocumentPermission" custom permission - update detail (fail, citizen can only read)
+        :return:
+        """
+        document_permissions = DocumentPermissions()
+        request = HttpRequest()
+        request.method = 'PUT'
+        request.user = self.citizens[1]
+        obj = self.documents[0]
+        result = document_permissions.has_object_permission(request, None, obj)
+        self.assertFalse(result)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   DocumentVersionPermissions - list
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def test_document_version_permission_post_ok(self):
+        """
+        Testing "DocumentPermission" custom permission - post (ok)
+        :return:
+        """
+        document_version_permissions = DocumentVersionPermission()
+        request = HttpRequest()
+        request.method = 'POST'
+        request.resolver_match = ResolverMatch(None, None, {'document_id': 1})
+        request.user = self.pa_operators[0]
+        result = document_version_permissions.has_permission(request, None)
+        self.assertTrue(result)
+
+    def test_document_version_permission_post_fail_different_pa(self):
+        """
+        Testing "DocumentPermission" custom permission - post (fail different pa)
+        :return:
+        """
+        document_version_permissions = DocumentVersionPermission()
+        request = HttpRequest()
+        request.method = 'POST'
+        request.resolver_match = ResolverMatch(None, None, {'document_id': 1})
+        request.user = self.pa_operators[1]
+        result = document_version_permissions.has_permission(request, None)
+        self.assertFalse(result)
+
+    def test_document_version_permission_post_fail_is_citizen(self):
+        """
+        Testing "DocumentPermission" custom permission - post (fail is citizen)
+        :return:
+        """
+        document_version_permissions = DocumentVersionPermission()
+        request = HttpRequest()
+        request.resolver_match = ResolverMatch(None, None, {'document_id': 1})
+        request.user = self.citizens[0]
+        result = document_version_permissions.has_permission(request, None)
+        self.assertFalse(result)
+
+    def test_document_version_permission_post_fail_no_auth(self):
+        """
+        Testing "DocumentPermission" custom permission - post (fail is citizen)
+        :return:
+        """
+        document_version_permissions = DocumentVersionPermission()
+        request = HttpRequest()
+        request.method = 'POST'
+        request.resolver_match = ResolverMatch(None, None, {'document_id': 1})
+        request.user = None
+        result = document_version_permissions.has_permission(request, None)
+        self.assertFalse(result)
+
+
+
