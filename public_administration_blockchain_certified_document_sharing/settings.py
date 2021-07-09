@@ -36,6 +36,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
+PROJECT_INFO = {
+    'NAME': 'Public Administration Blockchain Certified Document Sharing',
+    'DESCRIPTION': 'A dApp to share blockchain certified documents from Public Administration to Citizen',
+    'VERSION': '1.0.0-beta'
+}
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-@uc-%1m^jdz%6bd(-wxp&g@tk*n%@lucl=g_)u7!dwmb#ffhpg'
 
@@ -105,10 +111,11 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication'
     ],
     'TEST_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.BasicAuthentication'
+        'rest_framework.authentication.BasicAuthentication',
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
