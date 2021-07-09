@@ -234,7 +234,7 @@ def add_operator_to_whitelist(w3, sc, owner_secret_key, operator_address):
     :param w3: the w3 connection
     :param owner_secret_key: the secret key of the document owner
     :param sc: the document sc
-    :param operator_address: the operator address
+    :param operator_address: the operator address to add
     :return:
     """
     acct = w3.eth.account.privateKeyToAccount(owner_secret_key)
@@ -252,11 +252,25 @@ def add_operator_to_whitelist(w3, sc, owner_secret_key, operator_address):
     w3.eth.wait_for_transaction_receipt(tx_hash)
 
 
-def remove_operator_from_whitelist(sc, operator_address):
+def remove_operator_from_whitelist(w3, sc, owner_secret_key, operator_address):
     """
     Remove an operator from the whitelist
+    :param w3: the w3 connection
+    :param owner_secret_key: the secret key of the document owner
     :param sc: the document sc
-    :param operator_address: the operator address
+    :param operator_address: the operator address to remove
     :return:
     """
-    pass
+    acct = w3.eth.account.privateKeyToAccount(owner_secret_key)
+    check_balance(w3, acct.address)
+    # 2. build transaction
+    remove_from_whitelist_tx = sc.functions.removeFromWhiteList(operator_address).buildTransaction({
+        'from': acct.address,
+        'nonce': w3.eth.getTransactionCount(acct.address),
+        'gas': GAS_CONTRACT_DEPLOY,
+        'gasPrice': GAS_PRICE})
+    # 3. sign transaction
+    signed = acct.signTransaction(remove_from_whitelist_tx)
+    # 4. send signed transaction
+    tx_hash = w3.eth.sendRawTransaction(signed.rawTransaction)
+    w3.eth.wait_for_transaction_receipt(tx_hash)
