@@ -9,10 +9,11 @@
 
 from django.test import TestCase
 from django.urls import ResolverMatch
+from django.http import HttpRequest
 
 from api.document.test.abstract_document_test import DocumentTestAbstract
 from ..permissions import *
-from django.http import HttpRequest
+from ..querysets import *
 
 
 class DocumentUnitTest(DocumentTestAbstract, TestCase):
@@ -350,5 +351,193 @@ class DocumentUnitTest(DocumentTestAbstract, TestCase):
         result = document_version_permissions.has_permission(request, None)
         self.assertFalse(result)
 
+    # ------------------------------------------------------------------------------------------------------------------
+    #
+    #   Queryset test
+    #
+    # ------------------------------------------------------------------------------------------------------------------
 
+    # ------------------------------------------------------------------------------------------------------------------
+    #   Viewable Document
+    # ------------------------------------------------------------------------------------------------------------------
 
+    def test_document_queryset_op1(self):
+        """
+        The the document queryset as operator1 (return all documents)
+        :return:
+        """
+        request = HttpRequest()
+        request.user = self.pa_operators[0]
+        results = document_queryset(request)
+        self.assertEqual(len(results), self.RANGE_MAX_DOCUMENTS)
+
+    def test_document_queryset_op2(self):
+        """
+        The the document queryset as operator2 (return only public documents)
+        :return:
+        """
+        request = HttpRequest()
+        request.user = self.pa_operators[1]
+        results = document_queryset(request)
+        self.assertLess(len(results), self.RANGE_MAX_DOCUMENTS)
+        for d in results:
+            self.assertFalse(d.require_permission)
+
+    def test_document_queryset_citizen1(self):
+        """
+        The the document queryset as citizen1 (return all document, we have create permissions)
+        :return:
+        """
+        request = HttpRequest()
+        request.user = self.citizens[0]
+        results = document_queryset(request)
+        self.assertEqual(len(results), self.RANGE_MAX_DOCUMENTS)
+
+    def test_document_queryset_citizen2(self):
+        """
+        The the document queryset as citizen2 (return only public documents, citizen2 has not permissions)
+        :return:
+        """
+        request = HttpRequest()
+        request.user = self.citizens[1]
+        results = document_queryset(request)
+        self.assertLess(len(results), self.RANGE_MAX_DOCUMENTS)
+        for d in results:
+            self.assertFalse(d.require_permission)
+
+    def test_document_queryset_no_auth(self):
+        """
+        The the document queryset whit no auth (return only public documents)
+        :return:
+        """
+        request = HttpRequest()
+        request.user = None
+        results = document_queryset(request)
+        self.assertLess(len(results), self.RANGE_MAX_DOCUMENTS)
+        for d in results:
+            self.assertFalse(d.require_permission)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   Writeable Document
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def test_document_queryset_write_op1(self):
+        """
+        The the document queryset as operator1 (return all documents)
+        :return:
+        """
+        request = HttpRequest()
+        request.user = self.pa_operators[0]
+        results = document_write_queryset(request)
+        self.assertEqual(len(results), self.RANGE_MAX_DOCUMENTS)
+
+    def test_document_queryset_write_op2(self):
+        """
+        The the document queryset as operator2 (return 0 documents)
+        :return:
+        """
+        request = HttpRequest()
+        request.user = self.pa_operators[1]
+        results = document_write_queryset(request)
+        self.assertEqual(len(results), 0)
+
+    def test_document_queryset_write_citizen1(self):
+        """
+        The the document queryset as citizen1 (return 0 documents)
+        :return:
+        """
+        request = HttpRequest()
+        request.user = self.citizens[0]
+        results = document_write_queryset(request)
+        self.assertEqual(len(results), 0)
+
+    def test_document_queryset_write_no_auth(self):
+        """
+        The the document queryset with no auth (return 0 documents)
+        :return:
+        """
+        request = HttpRequest()
+        request.user = None
+        results = document_write_queryset(request)
+        self.assertEqual(len(results), 0)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   Viewable DocumentVersions
+    # ------------------------------------------------------------------------------------------------------------------
+
+    class Caller:
+        """
+        Caller class
+        """
+
+        def __init__(self, request, kwargs):
+            self.request = request
+            self.kwargs = kwargs
+
+    def test_document_version_queryset_op1(self):
+        """
+        The the document queryset as operator1 (return all documents)
+        :return:
+        """
+        request = HttpRequest()
+        kwargs = {'document_id': 1}
+        request.user = self.pa_operators[0]
+        results = document_version_queryset(self.Caller(request, kwargs))
+        self.assertEqual(len(results), self.RANGE_MAX_DOCUMENT_VERSIONS)
+
+    def test_document_versions_queryset_op2(self):
+        """
+        The the document version queryset as operator2 (return 0 versions, document is private)
+        :return:
+        """
+        request = HttpRequest()
+        kwargs = {'document_id': 1}
+        request.user = self.pa_operators[1]
+        results = document_version_queryset(self.Caller(request, kwargs))
+        self.assertEqual(len(results), 0)
+
+    def test_document_versions_queryset_citizen1(self):
+        """
+        The the document queryset as citizen1 (return all versions, citizen 1 has permission to view)
+        :return:
+        """
+        request = HttpRequest()
+        kwargs = {'document_id': 1}
+        request.user = self.citizens[0]
+        results = document_version_queryset(self.Caller(request, kwargs))
+        self.assertEqual(len(results), self.RANGE_MAX_DOCUMENT_VERSIONS)
+
+    def test_document_versions_queryset_citizen2(self):
+        """
+        The the document queryset as citizen2 (return 0, document is private and citizen 2 has not permission to view)
+        :return:
+        """
+        request = HttpRequest()
+        kwargs = {'document_id': 1}
+        request.user = self.citizens[1]
+        results = document_version_queryset(self.Caller(request, kwargs))
+        self.assertEqual(len(results), 0)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    #   Permissions
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def test_permission_queryset_op1(self):
+        """
+        The the permission queryset as operator1 (return all permissions)
+        :return:
+        """
+        request = HttpRequest()
+        request.user = self.pa_operators[0]
+        results = permission_all_queryset(self.Caller(request, None))
+        self.assertEqual(len(results), self.RANGE_PERMISSIONS_MAX)
+
+    def test_permission_queryset_op2(self):
+        """
+        The the permission queryset as operator2 (return 0 permissions)
+        :return:
+        """
+        request = HttpRequest()
+        request.user = self.pa_operators[1]
+        results = permission_all_queryset(self.Caller(request, None))
+        self.assertEqual(len(results), 0)

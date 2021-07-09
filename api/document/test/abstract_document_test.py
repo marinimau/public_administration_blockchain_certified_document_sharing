@@ -20,6 +20,7 @@ class DocumentTestAbstract(APITestCase):
     RANGE_MAX = 3
     RANGE_MAX_DOCUMENTS = 5
     RANGE_MAX_DOCUMENT_VERSIONS = 8
+    RANGE_PERMISSIONS_MAX = RANGE_MAX_DOCUMENTS - 1
 
     class Meta:
         abstract = True
@@ -76,7 +77,7 @@ class DocumentTestAbstract(APITestCase):
         cls.permissions = [Permission.objects.create(
             citizen=cls.citizens[0],
             document=cls.documents[i]
-        ) for i in range(cls.RANGE_MAX_DOCUMENTS - 1)]
+        ) for i in range(cls.RANGE_PERMISSIONS_MAX)]
 
         # 6. Setup Favorites
         cls.favorites = [Favorite.objects.create(
