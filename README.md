@@ -1,6 +1,8 @@
 # Public Administration Blockchain Certified Document Sharing
 
-A dApp to distribute blockchain certified documents from PAs to citizens.
+A dApp to distribute blockchain certified documents from PAs to citizens. All the features are accessible via REST api.
+
+Citizen related features are accessible also via frontend.
 
 ## Getting Started
 
@@ -25,15 +27,18 @@ IMPORTANT: use valid Etherum credential for the operator, and ensure that he as 
 * Document creation and update (by version creation)
 * Public and private documents: if a document is private citizen must have read permission
 * Document version inherits permissions from document
-* Pa management: an operator can update (create versions) only for documents owned by his PA, an operator can view only public documents or private documents (if they are owned by his pa)
+* Pa management: an operator can update (create versions) only for documents owned by his PA, an operator can view only public documents or private documents (if they are owned by his PA)
 * Automatic document SC and document version (transaction in the document SC) deploy
 * Automatic fingerprint validation in download phase.
 * SC operator authentication based on whitelist
+* Citizen can add to favorites documents
 
 
 ## OpenApi documentation
 
-The documentation is available at ```http://127.0.0.1:8000/documentation/```. Note that only endpoints accessible with current authorization are shown:
+The documentation is available at ```http://127.0.0.1:8000/documentation/```.
+
+Note that only endpoints accessible with current authorization are shown:
 * if you are unauthorized you see only public endpoints
 * if you are authorized as citizen you see public + citizen endpoints
 * if you are authorized as pa operator you see public + operator endpoints
