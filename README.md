@@ -21,6 +21,13 @@ Note that you will need to create a super user (using "createsuperuser" command)
 
 IMPORTANT: use valid Etherum credential for the operator, and ensure that he as some Ether in his balance (default testnet is Rinkeby, you can change it in settings)
 
+## Test the project
+
+```bash
+$ python3 manage.py test
+```
+
+
 ## Features
 
 * Citizen and PA operators management
