@@ -110,3 +110,4 @@ class Citizen(User):
         """
         return str(self.cf)
 
+
