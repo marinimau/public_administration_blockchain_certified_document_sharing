@@ -15,7 +15,7 @@ from api.user.models import PublicAuthority, PaOperator, Citizen
 
 class DocumentTestAbstract(APITestCase):
     """
-    Test acceptance for document app
+    Test for document app
     """
     RANGE_MAX = 3
     RANGE_MAX_DOCUMENTS = 5
