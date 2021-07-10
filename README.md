@@ -30,7 +30,7 @@ $ python3 manage.py test
 
 ## Features
 
-* Citizen and PA operators management
+* Citizens and PA operators management
 * Document creation and update (by version creation)
 * Public and private documents: if a document is private citizen must have read permission
 * Document version inherits permissions from document
