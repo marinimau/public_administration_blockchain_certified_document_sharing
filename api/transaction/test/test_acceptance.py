@@ -14,5 +14,6 @@ class TransactionTestAcceptance(TransactionTestAbstract):
     """
     Transaction test acceptance class
     """
+    pass
 
 

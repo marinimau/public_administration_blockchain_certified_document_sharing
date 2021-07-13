@@ -7,6 +7,7 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
 from ..models import DocumentVersionTransaction, DocumentSC
@@ -51,19 +52,24 @@ class TransactionTestAbstract(APITestCase):
             author=cls.operator,
             document=cls.document,
         )
+        cls.documents_version2 = DocumentVersion.objects.create(
+            author=cls.operator,
+            document=cls.document,
+        )
         # 5. setup Transactions
         cls.valid_transaction = DocumentVersionTransaction.objects.create(
             author_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
             transaction_address='0xacfa697d0aa65d1a8f533f198ac0499ee866d9bf24240a99bd67e10cee6ff6c0',
             hash_fingerprint=b'U\xef7>X\xc4\xd3\x08\x96zE\xf3 \xe7\x95\x85\xd5\xdd\x829\xabu"f\xb8Bl\xdb\x12v\xa7\x98',
-            download_url='https://siteurl.com/version/57'
+            download_url='https://siteurl.com/version/57',
+            document_version=cls.documents_version
         )
         cls.invalid_transaction = DocumentVersionTransaction.objects.create(
             author_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
             transaction_address='0xacfa697d0aa65d1a8f533f198ac0499ee866d9bf24240a99bd67e10cee6ff6c0',
             hash_fingerprint=b"|C\xca~\x0cbm'\x10\xf6:\x93)\xd5\xd0P\xbf\x8bRP\xc8Q\xc3|\xf6\xf1q\xe2S\x96\xdb\xc9",
             download_url='https://siteurl.com/version/57',
-            document_version=cls.documents_version
+            document_version=cls.documents_version2
         )
         # 6. setup sc
         cls.document_sc = DocumentSC.objects.create(
@@ -71,4 +77,8 @@ class TransactionTestAbstract(APITestCase):
             transaction_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
             document=cls.document
         )
-
+        # 7. file
+        cls.file = SimpleUploadedFile(
+            "file.txt",
+            b"file content"
+        )
