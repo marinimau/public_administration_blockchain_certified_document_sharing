@@ -64,13 +64,19 @@ class TransactionTestAbstract(APITestCase):
             require_permission=True
         )
         # 4. setup Document Version
+        cls.file = SimpleUploadedFile(
+            "file.txt",
+            b"file content"
+        )
         cls.documents_version = DocumentVersion.objects.create(
             author=cls.operator,
             document=cls.document,
+            file_resource=cls.file
         )
         cls.documents_version2 = DocumentVersion.objects.create(
             author=cls.operator,
             document=cls.document,
+            file_resource=cls.file
         )
         # 5. setup Transactions
         cls.valid_transaction = DocumentVersionTransaction.objects.create(
