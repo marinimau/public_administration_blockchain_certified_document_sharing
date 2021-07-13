@@ -14,6 +14,17 @@ class TransactionTestAcceptance(TransactionTestAbstract):
     """
     Transaction test acceptance class
     """
-    pass
+
+    def test_validate_file(self):
+        """
+        Test validate document version file (ok)
+        """
+        pass
+
+    def test_validate_file_fail(self):
+        """
+        Test validate document version file (fail)
+        """
+        pass
 
 

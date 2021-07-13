@@ -78,7 +78,7 @@ class TransactionTestAbstract(APITestCase):
             transaction_address='0xacfa697d0aa65d1a8f533f198ac0499ee866d9bf24240a99bd67e10cee6ff6c0',
             hash_fingerprint=b'U\xef7>X\xc4\xd3\x08\x96zE\xf3 \xe7\x95\x85\xd5\xdd\x829\xabu"f\xb8Bl\xdb\x12v\xa7\x98',
             download_url='https://siteurl.com/version/57',
-            document_version=cls.documents_version
+            document_version=cls.documents_version,
         )
         cls.invalid_transaction = DocumentVersionTransaction.objects.create(
             author_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
@@ -98,8 +98,3 @@ class TransactionTestAbstract(APITestCase):
             transaction_address='0x65138ba4ea251D8E96DB11cEad9285EE66039151',
             document=cls.document2
         ),
-        # 7. file
-        cls.file = SimpleUploadedFile(
-            "file.txt",
-            b"file content"
-        )
