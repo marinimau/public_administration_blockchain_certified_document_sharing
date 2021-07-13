@@ -9,7 +9,9 @@
 
 from rest_framework.test import APITestCase
 
-from ..models import DocumentVersionTransaction
+from ..models import DocumentVersionTransaction, DocumentSC
+from ...document.models import Document, DocumentVersion
+from ...user.models import PublicAuthority, PaOperator
 
 
 class TransactionTestAbstract(APITestCase):
@@ -23,6 +25,33 @@ class TransactionTestAbstract(APITestCase):
         Set-up the data for the test
         :return:
         """
+        # 1. setup pa
+        cls.public_authority = PublicAuthority.objects.create(name='test')
+        # 2. setup author
+        cls.operator = PaOperator.objects.create(
+            username='operator',
+            email='operator@operators.com',
+            password='test',
+            is_active=True,
+            operator_code='OP1',
+            public_authority=cls.public_authority,
+            bc_address='0x0000000000000000000000000000000000000000',
+            bc_secret_key='secret'
+        )
+        cls.operator.set_password('PaOperator123.')
+        # 3. setup Document
+        cls.document = Document.objects.create(
+            title='Document',
+            description='This is the description of the document ',
+            author=cls.operator,
+            require_permission=True
+        )
+        # 4. setup Document Version
+        cls.documents_version = DocumentVersion.objects.create(
+            author=cls.operator,
+            document=cls.document,
+        )
+        # 5. setup Transactions
         cls.valid_transaction = DocumentVersionTransaction.objects.create(
             author_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
             transaction_address='0xacfa697d0aa65d1a8f533f198ac0499ee866d9bf24240a99bd67e10cee6ff6c0',
@@ -33,6 +62,13 @@ class TransactionTestAbstract(APITestCase):
             author_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
             transaction_address='0xacfa697d0aa65d1a8f533f198ac0499ee866d9bf24240a99bd67e10cee6ff6c0',
             hash_fingerprint=b"|C\xca~\x0cbm'\x10\xf6:\x93)\xd5\xd0P\xbf\x8bRP\xc8Q\xc3|\xf6\xf1q\xe2S\x96\xdb\xc9",
-            download_url='https://siteurl.com/version/57'
+            download_url='https://siteurl.com/version/57',
+            document_version=cls.documents_version
+        )
+        # 6. setup sc
+        cls.document_sc = DocumentSC.objects.create(
+            author_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
+            transaction_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
+            document=cls.document
         )
 

@@ -7,6 +7,12 @@
 #   Credits: @marinimau (https://github.com/marinimau)
 #
 
-from django.test import TestCase
+from .abstract_transaction_test import TransactionTestAbstract
 
-# Create your tests here.
+
+class TransactionTestAcceptance(TransactionTestAbstract):
+    """
+    Transaction test acceptance class
+    """
+
+
