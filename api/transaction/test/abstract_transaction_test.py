@@ -36,12 +36,28 @@ class TransactionTestAbstract(APITestCase):
             is_active=True,
             operator_code='OP1',
             public_authority=cls.public_authority,
-            bc_address='0x0000000000000000000000000000000000000000',
+            bc_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
+            bc_secret_key='secret'
+        )
+        cls.operator2 = PaOperator.objects.create(
+            username='operator2',
+            email='operator2@operators.com',
+            password='test',
+            is_active=True,
+            operator_code='OP2',
+            public_authority=cls.public_authority,
+            bc_address='0x9737d773D02cdeC489BD86354188676688A29972',
             bc_secret_key='secret'
         )
         cls.operator.set_password('PaOperator123.')
         # 3. setup Document
         cls.document = Document.objects.create(
+            title='Document',
+            description='This is the description of the document ',
+            author=cls.operator,
+            require_permission=True
+        )
+        cls.document2 = Document.objects.create(
             title='Document',
             description='This is the description of the document ',
             author=cls.operator,
@@ -74,9 +90,14 @@ class TransactionTestAbstract(APITestCase):
         # 6. setup sc
         cls.document_sc = DocumentSC.objects.create(
             author_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
-            transaction_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
+            transaction_address='0x65138ba4ea251D8E96DB11cEad9285EE66039157',
             document=cls.document
-        )
+        ),
+        cls.document2_sc = DocumentSC.objects.create(
+            author_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
+            transaction_address='0x65138ba4ea251D8E96DB11cEad9285EE66039151',
+            document=cls.document2
+        ),
         # 7. file
         cls.file = SimpleUploadedFile(
             "file.txt",
