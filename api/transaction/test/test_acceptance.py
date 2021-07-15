@@ -35,7 +35,6 @@ class TransactionTestAcceptance(TransactionTestAbstract):
         """
         request, view = self.get_document_validation_view()
         response = view(request)
-        print(response.data)
         self.assertTrue(response.status_code, 200)
         self.assertTrue(response.data['status'], 'ALTERED')
 

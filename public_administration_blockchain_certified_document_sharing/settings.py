@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'api.user',
     'api.document',
     'api.transaction',
+    'contracts',
 ]
 
 MIDDLEWARE = [

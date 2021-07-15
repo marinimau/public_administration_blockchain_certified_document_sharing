@@ -8,6 +8,7 @@
 #
 
 import hashlib
+import sys
 
 from rest_framework import serializers
 from web3 import Web3, HTTPProvider
@@ -35,6 +36,16 @@ def web3_connection():
     w3 = Web3(HTTPProvider(settings.HTTP_PROVIDER_URL))
     assert (w3.isConnected())
     return w3
+
+
+def get_gas_price(w3):
+    """
+    return the gas price
+    :param w3: the w3 connection
+    """
+    if 'test' not in sys.argv:
+        return w3.eth.generate_gas_price()
+    return 0
 
 
 def check_balance(w3, address, minimum_required=settings.GAS_CONTRACT_DEPLOY):
@@ -67,18 +78,20 @@ def deploy_contract(w3, document_page_url, secret_key):
     # 1. declare contract
     document_sc = w3.eth.contract(abi=abi, bytecode=bytecode)
     # 2. authenticate operator
-    acct = w3.eth.account.privateKeyToAccount(secret_key)
-    check_balance(w3, acct.address)
+    gas_required = settings.GAS_CONTRACT_DEPLOY
+    gas_price = get_gas_price(w3)
+    acct = w3.eth.account.from_key(secret_key)
+    check_balance(w3, acct.address, minimum_required=(gas_required * gas_price))
     # 3. create the constructor transaction
     construct_txn = document_sc.constructor(document_page_url).buildTransaction({
         'from': acct.address,
-        'nonce': w3.eth.getTransactionCount(acct.address),
-        'gas': settings.GAS_CONTRACT_DEPLOY,
-        'gasPrice': settings.GAS_PRICE})
+        'nonce': w3.eth.get_transaction_count(acct.address),
+        'gas': gas_required,
+        'gasPrice': gas_price})
     # 4. sign transaction
-    signed = acct.signTransaction(construct_txn)
+    signed = acct.sign_transaction(construct_txn)
     # 5. send signed transaction
-    tx_hash = w3.eth.sendRawTransaction(signed.rawTransaction)
+    tx_hash = w3.eth.send_raw_transaction(signed.rawTransaction)
     return w3.eth.wait_for_transaction_receipt(tx_hash)
 
 
@@ -130,14 +143,16 @@ def get_contract(w3, document_id):
     return None
 
 
-def create_document_version_transaction(document_version):
+def create_document_version_transaction(document_version, w3=None):
     """
     Create a transaction for a document version obj
     :param document_version: the document_version obj
+    :param w3: the w3 connection
     :return:
     """
     # 1: create connection connection
-    w3 = web3_connection()
+    if w3 is None:
+        w3 = web3_connection()
     # 2: get the SC from document
     sc = get_contract(w3, document_version.document.id)
     if sc is not None:
@@ -149,19 +164,21 @@ def create_document_version_transaction(document_version):
         document_version_page_url = str(settings.SITE_URL + 'version/' + str(document_version.id))
         fingerprint = calculate_hash_fingerprint(document_version.file_resource)
         # 5: create the transaction
-        acct = w3.eth.account.privateKeyToAccount(document_version.document.author.bc_secret_key)
-        check_balance(w3, acct.address)
+        acct = w3.eth.account.from_key(document_version.document.author.bc_secret_key)
+        gas_required = settings.GAS_NEW_VERSION_TRANSACTION
+        gas_price = get_gas_price(w3)
+        check_balance(w3, acct.address, minimum_required=(gas_required * gas_price))
         # 6. create the constructor transaction
         create_version_tx = sc.functions.createDocumentVersion(document_version.id, document_version_page_url,
                                                                fingerprint).buildTransaction({
             'from': acct.address,
-            'nonce': w3.eth.getTransactionCount(acct.address),
-            'gas': settings.GAS_CONTRACT_DEPLOY,
-            'gasPrice': settings.GAS_PRICE})
+            'nonce': w3.eth.get_transaction_count(acct.address),
+            'gas': gas_required,
+            'gasPrice': gas_price})
         # 7. sign transaction
-        signed = acct.signTransaction(create_version_tx)
+        signed = acct.sign_transaction(create_version_tx)
         # 8. send signed transaction
-        tx_hash = w3.eth.sendRawTransaction(signed.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed.rawTransaction)
         tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         transaction_address = tx_receipt.transactionHash.hex()
         # 9: store transaction data
@@ -236,18 +253,20 @@ def add_operator_to_whitelist(w3, sc, owner_secret_key, operator_address):
     :param operator_address: the operator address to add
     :return:
     """
-    acct = w3.eth.account.privateKeyToAccount(owner_secret_key)
-    check_balance(w3, acct.address)
+    acct = w3.eth.account.from_key(owner_secret_key)
+    gas_required = settings.GAS_ADD_REMOVE_WHITELIST
+    gas_price = get_gas_price(w3)
+    check_balance(w3, acct.address, minimum_required=(gas_required * gas_price))
     # 2. build transaction
     add_to_whitelist_tx = sc.functions.addToWhiteList(operator_address).buildTransaction({
         'from': acct.address,
-        'nonce': w3.eth.getTransactionCount(acct.address),
-        'gas': settings.GAS_CONTRACT_DEPLOY,
-        'gasPrice': settings.GAS_PRICE})
+        'nonce': w3.eth.get_transaction_count(acct.address),
+        'gas': gas_required,
+        'gasPrice': gas_price})
     # 3. sign transaction
-    signed = acct.signTransaction(add_to_whitelist_tx)
+    signed = acct.sign_transaction(add_to_whitelist_tx)
     # 4. send signed transaction
-    tx_hash = w3.eth.sendRawTransaction(signed.rawTransaction)
+    tx_hash = w3.eth.send_raw_transaction(signed.rawTransaction)
     w3.eth.wait_for_transaction_receipt(tx_hash)
 
 
@@ -260,16 +279,18 @@ def remove_operator_from_whitelist(w3, sc, owner_secret_key, operator_address):
     :param operator_address: the operator address to remove
     :return:
     """
-    acct = w3.eth.account.privateKeyToAccount(owner_secret_key)
-    check_balance(w3, acct.address)
+    gas_required = settings.GAS_ADD_REMOVE_WHITELIST
+    gas_price = get_gas_price(w3)
+    acct = w3.eth.account.from_key(owner_secret_key)
+    check_balance(w3, acct.address, minimum_required=(gas_required * gas_price))
     # 2. build transaction
     remove_from_whitelist_tx = sc.functions.removeFromWhiteList(operator_address).buildTransaction({
         'from': acct.address,
-        'nonce': w3.eth.getTransactionCount(acct.address),
-        'gas': settings.GAS_CONTRACT_DEPLOY,
-        'gasPrice': settings.GAS_PRICE})
+        'nonce': w3.eth.get_transaction_count(acct.address),
+        'gas': gas_required,
+        'gasPrice': gas_price})
     # 3. sign transaction
-    signed = acct.signTransaction(remove_from_whitelist_tx)
+    signed = acct.sign_transaction(remove_from_whitelist_tx)
     # 4. send signed transaction
-    tx_hash = w3.eth.sendRawTransaction(signed.rawTransaction)
+    tx_hash = w3.eth.send_raw_transaction(signed.rawTransaction)
     w3.eth.wait_for_transaction_receipt(tx_hash)
