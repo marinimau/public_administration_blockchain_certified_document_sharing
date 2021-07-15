@@ -44,7 +44,7 @@ def get_gas_price(w3):
     :param w3: the w3 connection
     """
     if 'test' not in sys.argv:
-        return w3.eth.generate_gas_price()
+        return settings.GAS_PRICE
     return 0
 
 

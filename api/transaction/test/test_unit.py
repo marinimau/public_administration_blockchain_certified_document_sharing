@@ -32,8 +32,7 @@ class TransactionTestUnit(TransactionTestAbstract):
         """
         fingerprint = calculate_hash_fingerprint(self.file)
         self.assertEqual(fingerprint,
-                         b'\xe0\xac6\x01\x00]\xfa\x18d\xf59*\xab\xaf}\x89\x8b\x1b['
-                         b'\xab\x85O\x1a\xcbD\x91\xbc\xd8\x06\xb7k\x0c')
+                         b'\xe0\x0eE%\xfa\xa9\x91\xb8"S\xc8ZF_\x85\xe7\xdfm\xcb\x98X_v\xd9\t\xf4\x05\x18vP\xdc\x03')
 
     def test_get_contract(self):
         """
@@ -56,7 +55,7 @@ class TransactionTestUnit(TransactionTestAbstract):
         Get document version transaction test (ok)
         """
         result = get_transaction(self.documents_version.id)
-        self.assertEqual(result, '0xacfa697d0aa65d1a8f533f198ac0499ee866d9bf24240a99bd67e10cee6ff6c0')
+        self.assertEqual(result, '0x02cd10878c32bb26c19feb3dcf414fac060b8acddd9ff0cac4ead45d7425b9e2')
 
     def test_get_version_transaction_fail(self):
         """

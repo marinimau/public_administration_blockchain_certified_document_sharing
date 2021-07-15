@@ -65,8 +65,8 @@ class TransactionTestAbstract(APITestCase):
         )
         # 4. setup Document Version
         cls.file = SimpleUploadedFile(
-            "file.txt",
-            b"file content"
+            "file_test.txt",
+            b"this file is needed to run blockchain validation test"
         )
         cls.documents_version = DocumentVersion.objects.create(
             author=cls.operator,
@@ -81,8 +81,8 @@ class TransactionTestAbstract(APITestCase):
         # 5. setup Transactions
         cls.valid_transaction = DocumentVersionTransaction.objects.create(
             author_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
-            transaction_address='0xacfa697d0aa65d1a8f533f198ac0499ee866d9bf24240a99bd67e10cee6ff6c0',
-            hash_fingerprint=b'U\xef7>X\xc4\xd3\x08\x96zE\xf3 \xe7\x95\x85\xd5\xdd\x829\xabu"f\xb8Bl\xdb\x12v\xa7\x98',
+            transaction_address='0x02cd10878c32bb26c19feb3dcf414fac060b8acddd9ff0cac4ead45d7425b9e2',
+            hash_fingerprint=b'\xe0\x0eE%\xfa\xa9\x91\xb8"S\xc8ZF_\x85\xe7\xdfm\xcb\x98X_v\xd9\t\xf4\x05\x18vP\xdc\x03',
             download_url='https://siteurl.com/version/57',
             document_version=cls.documents_version,
         )
