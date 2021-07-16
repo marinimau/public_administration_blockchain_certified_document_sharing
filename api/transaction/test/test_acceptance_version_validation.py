@@ -12,7 +12,6 @@ from rest_framework.test import APIRequestFactory
 
 from .abstract_transaction_test import TransactionTestAbstract
 from ..views import validate_document
-from ..utils.integration import calculate_hash_fingerprint
 
 factory = APIRequestFactory()
 
