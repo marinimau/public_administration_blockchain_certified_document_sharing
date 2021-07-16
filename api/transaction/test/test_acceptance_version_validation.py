@@ -6,11 +6,13 @@
 #   Repository: https://github.com/marinimau/public_administration_blockchain_certified_document_sharing
 #   Credits: @marinimau (https://github.com/marinimau)
 #
+
 from django.urls import reverse
 from rest_framework.test import APIRequestFactory
 
 from .abstract_transaction_test import TransactionTestAbstract
 from ..views import validate_document
+from ..utils.integration import calculate_hash_fingerprint
 
 factory = APIRequestFactory()
 
@@ -21,30 +23,40 @@ class TransactionTestAcceptance(TransactionTestAbstract):
     """
 
     @staticmethod
-    def get_document_validation_view():
+    def get_document_validation_view(version_id=1):
         """
         Returns a tuple: request and view
+        :param version_id: the od of the document version
         :return: a tuple: request and view
         """
-        request = factory.get(reverse('document-version-validation'), {'document_version': 1})
+        request = factory.get(reverse('document-version-validation'), {'document_version': version_id})
         return request, validate_document
 
     def test_validate_file(self):
         """
         Test validate document version file (ok)
         """
-        request, view = self.get_document_validation_view()
+        request, view = self.get_document_validation_view(version_id=62)
         response = view(request)
         self.assertTrue(response.status_code, 200)
-        self.assertTrue(response.data['status'], 'ALTERED')
+        self.assertEqual(response.data['status'], 'VALIDATED')
 
     def test_validate_file_altered(self):
         """
         Test validate document version file (altered)
         """
-        request, view = self.get_document_validation_view()
+        request, view = self.get_document_validation_view(version_id=1)
         response = view(request)
         self.assertTrue(response.status_code, 200)
-        self.assertTrue(response.data['status'], 'ALTERED')
+        self.assertEqual(response.data['status'], 'ALTERED')
+
+    def test_validate_file_unavailable(self):
+        """
+        Test validate document version file (unavailable)
+        """
+        request, view = self.get_document_validation_view(version_id=3)
+        response = view(request)
+        self.assertTrue(response.status_code, 200)
+        self.assertEqual(response.data['status'], 'UNAVAILABLE')
 
 

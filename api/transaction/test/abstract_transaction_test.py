@@ -6,7 +6,11 @@
 #   Repository: https://github.com/marinimau/public_administration_blockchain_certified_document_sharing
 #   Credits: @marinimau (https://github.com/marinimau)
 #
+import os
 
+from appdirs import unicode
+from django.conf import settings
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
@@ -64,26 +68,31 @@ class TransactionTestAbstract(APITestCase):
             require_permission=True
         )
         # 4. setup Document Version
-        cls.file = SimpleUploadedFile(
-            "file_test.txt",
-            b"this file is needed to run blockchain validation test"
-        )
-        cls.documents_version = DocumentVersion.objects.create(
-            author=cls.operator,
-            document=cls.document,
-            file_resource=cls.file
-        )
         cls.documents_version2 = DocumentVersion.objects.create(
             author=cls.operator,
             document=cls.document,
-            file_resource=cls.file
         )
+        cls.documents_version3 = DocumentVersion.objects.create(
+            author=cls.operator,
+            document=cls.document,
+        )
+        cls.documents_version_to_reach_correct_id = [DocumentVersion.objects.create(
+            author=cls.operator,
+            document=cls.document,
+        ) for _ in range(59)]
+        cls.documents_version = DocumentVersion.objects.create(
+            author=cls.operator,
+            document=cls.document,
+        )
+        cls.set_version_file(cls.documents_version)
+        cls.set_version_file(cls.documents_version2)
+        cls.set_version_file(cls.documents_version3)
         # 5. setup Transactions
         cls.valid_transaction = DocumentVersionTransaction.objects.create(
             author_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
-            transaction_address='0x02cd10878c32bb26c19feb3dcf414fac060b8acddd9ff0cac4ead45d7425b9e2',
+            transaction_address='0xc53364bd323d7299a37f149d7391c10068aa02913645c4a86a4c8106838ae793',
             hash_fingerprint=b'\xe0\x0eE%\xfa\xa9\x91\xb8"S\xc8ZF_\x85\xe7\xdfm\xcb\x98X_v\xd9\t\xf4\x05\x18vP\xdc\x03',
-            download_url='https://siteurl.com/version/57',
+            download_url='https://siteurl.com/version/61',
             document_version=cls.documents_version,
         )
         cls.invalid_transaction = DocumentVersionTransaction.objects.create(
@@ -96,7 +105,7 @@ class TransactionTestAbstract(APITestCase):
         # 6. setup sc
         cls.document_sc = DocumentSC.objects.create(
             author_address='0x4939119b43AFBFaB397d4fa5c46A14f460B1a2E9',
-            transaction_address='0x65138ba4ea251D8E96DB11cEad9285EE66039157',
+            transaction_address='0x3CfF857728e9f1db164C75E8425f0F9eB1B392E3',
             document=cls.document
         ),
         cls.document2_sc = DocumentSC.objects.create(
@@ -104,3 +113,18 @@ class TransactionTestAbstract(APITestCase):
             transaction_address='0x65138ba4ea251D8E96DB11cEad9285EE66039151',
             document=cls.document2
         ),
+
+    @staticmethod
+    def set_version_file(document_version):
+        """
+        Set the attached file tp the document version
+        :param document_version:
+        :return:
+        """
+        original_file_path = settings.STATICFILES_DIRS[0] + '/test/file.txt'
+        new_file_path = 'file.txt'
+        with open(original_file_path, "rb") as fh:
+            with ContentFile(fh.read()) as file_content:
+                document_version.file_resource.save(new_file_path, file_content)
+                document_version.save()
+

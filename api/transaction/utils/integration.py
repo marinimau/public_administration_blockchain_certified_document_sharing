@@ -9,6 +9,7 @@
 
 import hashlib
 import sys
+from pathlib import Path
 
 from rest_framework import serializers
 from web3 import Web3, HTTPProvider
@@ -17,7 +18,6 @@ from django.conf import settings
 from api.transaction.models import DocumentSC, DocumentVersionTransaction
 from contents.messages.get_messages import get_transaction_messages
 from contracts.document_compiled import bytecode, abi
-
 
 transaction_messages = get_transaction_messages()
 
@@ -124,9 +124,11 @@ def calculate_hash_fingerprint(file):
     :param file: the attached file
     :return: the fingerprint
     """
-    if file is not None:
+    if file is not None and Path(file.path).exists():
         file.open(mode='rb')
-        return hashlib.sha256(file.read()).digest()
+        digest = hashlib.sha256(file.read()).digest()
+        file.close()
+        return digest
     return hashlib.sha256().digest()
 
 
