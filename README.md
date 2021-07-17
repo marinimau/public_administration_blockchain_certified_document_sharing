@@ -1,3 +1,5 @@
+[![License: CC0-1.0](https://img.shields.io/badge/License-CC0%201.0-lightgrey.svg)](http://creativecommons.org/publicdomain/zero/1.0/)
+
 # Public Administration Blockchain Certified Document Sharing
 
 A dApp to distribute blockchain certified documents from PAs to citizens. All the features are accessible via REST api.

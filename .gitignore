@@ -8,3 +8,4 @@
 /api/transaction/migrations/
 /frontend/migrations/
 /media/
+/node_modules/
