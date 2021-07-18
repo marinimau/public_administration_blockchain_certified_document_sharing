@@ -14,9 +14,7 @@ $ cd public_administration_blockchain_certified_document_sharing
 $ python3 -m venv venv
 $ source venv/bin/activate
 $ pip install -r requirements.txt
-$ python3 manage.py makemigrations user
-$ python3 manage.py makemigrations document
-$ python3 manage.py makemigrations transaction
+$ python3 manage.py makemigrations
 $ python3 manage.py migrate
 $ python3 manage.py runserver
 ```
