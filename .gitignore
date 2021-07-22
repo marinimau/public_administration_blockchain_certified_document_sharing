@@ -1,11 +1,4 @@
 # Project exclude paths
 /venv/
 /.idea/
-*.sqlite
-*.sqlite3
-/api/user/migrations/
-/api/document/migrations/
-/api/transaction/migrations/
-/frontend/migrations/
-/media/
 /node_modules/
